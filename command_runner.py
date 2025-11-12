@@ -20,8 +20,8 @@ def strip_ansi_codes(text: str) -> str:
     str
         Cleaned line without escape sequences.
     """
-    ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
-    return ansi_escape.sub('', text)
+    ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+    return ansi_escape.sub("", text)
 
 
 def build_command(hemtt_executable: str, args: list[str]) -> list[str]:
@@ -103,10 +103,10 @@ class CommandRunner:
             # Prepare environment to disable color output from HEMTT
             run_env = self.env.copy() if self.env else os.environ.copy()
             # Force NO_COLOR to disable ANSI color codes
-            run_env['NO_COLOR'] = '1'
+            run_env["NO_COLOR"] = "1"
             # Also set other common env vars that disable colors
-            run_env['TERM'] = 'dumb'
-            
+            run_env["TERM"] = "dumb"
+
             # Use universal_newlines/text True for str output with UTF-8 encoding
             self.process = subprocess.Popen(
                 self.command,
@@ -116,8 +116,8 @@ class CommandRunner:
                 text=True,
                 bufsize=1,
                 universal_newlines=True,
-                encoding='utf-8',
-                errors='replace',
+                encoding="utf-8",
+                errors="replace",
                 env=run_env,
             )
             assert self.process.stdout is not None

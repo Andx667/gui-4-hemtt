@@ -17,6 +17,7 @@ class HemttGUI(tk.Tk):
     Provides buttons for common commands, live process output, and user
     preferences such as dark mode and verbosity toggles.
     """
+
     def __init__(self):
         """Initialize the main application window and state."""
         super().__init__()
@@ -100,13 +101,17 @@ class HemttGUI(tk.Tk):
         self.verbose_check = ttk.Checkbutton(opts, text="Verbose (-v)", variable=self.verbose_var)
         self.verbose_check.pack(side=tk.LEFT, padx=(0, 8))
         self.pedantic_var = tk.BooleanVar(value=False)
-        self.pedantic_check = ttk.Checkbutton(opts, text="Pedantic (-p)", variable=self.pedantic_var)
+        self.pedantic_check = ttk.Checkbutton(
+            opts, text="Pedantic (-p)", variable=self.pedantic_var
+        )
         self.pedantic_check.pack(side=tk.LEFT, padx=(0, 16))
-        
+
         # Dark mode toggle
-        self.btn_dark_mode = ttk.Button(opts, text="Toggle Dark Mode", command=self._toggle_dark_mode)
+        self.btn_dark_mode = ttk.Button(
+            opts, text="Toggle Dark Mode", command=self._toggle_dark_mode
+        )
         self.btn_dark_mode.pack(side=tk.LEFT, padx=(0, 8))
-        
+
         # Export log button
         self.btn_export_log = ttk.Button(opts, text="Export Log", command=self._export_log)
         self.btn_export_log.pack(side=tk.LEFT)
@@ -124,14 +129,16 @@ class HemttGUI(tk.Tk):
         # Output area
         out_frame = ttk.Frame(self, padding=8)
         out_frame.pack(fill=tk.BOTH, expand=True)
-        self.output = scrolledtext.ScrolledText(out_frame, height=20, wrap=tk.WORD, state=tk.DISABLED)
+        self.output = scrolledtext.ScrolledText(
+            out_frame, height=20, wrap=tk.WORD, state=tk.DISABLED
+        )
         self.output.pack(fill=tk.BOTH, expand=True)
-        
+
         # Configure color tags for different log levels (light mode)
         self.output.tag_config("error", foreground="red")
         self.output.tag_config("warning", foreground="orange")
         self.output.tag_config("info", foreground="blue")
-        
+
         # Store initial colors for theme switching
         self._setup_themes()
 
@@ -148,7 +155,7 @@ class HemttGUI(tk.Tk):
     def _setup_themes(self):
         """Setup light and dark mode color schemes and apply initial theme."""
         self.style = ttk.Style()
-        
+
         self.light_theme = {
             "bg": "#f0f0f0",
             "fg": "black",
@@ -158,7 +165,7 @@ class HemttGUI(tk.Tk):
             "text_fg": "black",
             "error": "red",
             "warning": "orange",
-            "info": "blue"
+            "info": "blue",
         }
         self.dark_theme = {
             "bg": "#2d2d2d",
@@ -169,7 +176,7 @@ class HemttGUI(tk.Tk):
             "text_fg": "#d4d4d4",
             "error": "#f48771",
             "warning": "#dcdcaa",
-            "info": "#4fc1ff"
+            "info": "#4fc1ff",
         }
         # Load dark mode preference from config
         self.dark_mode = self.config_data.get("dark_mode", False)
@@ -191,8 +198,11 @@ class HemttGUI(tk.Tk):
     def _browse_hemtt(self):
         """Open a file dialog to select the HEMTT executable and persist path."""
         initial = self.hemtt_var.get() or os.getcwd()
-        path = filedialog.askopenfilename(title="Select HEMTT executable", initialdir=os.path.dirname(initial),
-                                          filetypes=[("Executable", "*"), ("All files", "*.*")])
+        path = filedialog.askopenfilename(
+            title="Select HEMTT executable",
+            initialdir=os.path.dirname(initial),
+            filetypes=[("Executable", "*"), ("All files", "*.*")],
+        )
         if path:
             self.hemtt_var.set(path)
             self._persist_config()
@@ -207,14 +217,16 @@ class HemttGUI(tk.Tk):
 
     def _persist_config(self):
         """Write current UI settings and preferences to the config file."""
-        save_config({
-            "hemtt_path": self.hemtt_var.get().strip() or "hemtt",
-            "project_dir": self.proj_var.get().strip() or os.getcwd(),
-            "dark_mode": self.dark_mode,
-            "verbose": bool(self.verbose_var.get()),
-            "pedantic": bool(self.pedantic_var.get()),
-        })
-    
+        save_config(
+            {
+                "hemtt_path": self.hemtt_var.get().strip() or "hemtt",
+                "project_dir": self.proj_var.get().strip() or os.getcwd(),
+                "dark_mode": self.dark_mode,
+                "verbose": bool(self.verbose_var.get()),
+                "pedantic": bool(self.pedantic_var.get()),
+            }
+        )
+
     def _toggle_dark_mode(self):
         """Toggle between light and dark mode and persist preference."""
         self.dark_mode = not self.dark_mode
@@ -223,75 +235,75 @@ class HemttGUI(tk.Tk):
         else:
             self._apply_light_mode()
         self._persist_config()
-    
+
     def _apply_dark_mode(self):
         """Apply dark mode colors to the entire GUI and text tags."""
         theme = self.dark_theme
-        
+
         # Configure main window
         self.configure(bg=theme["bg"])
-        
+
         # Configure ttk styles
         self.style.configure("TFrame", background=theme["bg"])
         self.style.configure("TLabel", background=theme["bg"], foreground=theme["fg"])
         self.style.configure("TButton", background=theme["bg"], foreground=theme["fg"])
         self.style.configure("TCheckbutton", background=theme["bg"], foreground=theme["fg"])
-        self.style.configure("TEntry", fieldbackground=theme["entry_bg"], foreground=theme["entry_fg"])
-        
+        self.style.configure(
+            "TEntry", fieldbackground=theme["entry_bg"], foreground=theme["entry_fg"]
+        )
+
         # Configure output text widget
         self.output.configure(
-            bg=theme["text_bg"],
-            fg=theme["text_fg"],
-            insertbackground=theme["text_fg"]
+            bg=theme["text_bg"], fg=theme["text_fg"], insertbackground=theme["text_fg"]
         )
         self.output.tag_config("error", foreground=theme["error"])
         self.output.tag_config("warning", foreground=theme["warning"])
         self.output.tag_config("info", foreground=theme["info"])
-    
+
     def _apply_light_mode(self):
         """Apply light mode colors to the entire GUI and text tags."""
         theme = self.light_theme
-        
+
         # Configure main window
         self.configure(bg=theme["bg"])
-        
+
         # Configure ttk styles
         self.style.configure("TFrame", background=theme["bg"])
         self.style.configure("TLabel", background=theme["bg"], foreground=theme["fg"])
         self.style.configure("TButton", background=theme["bg"], foreground=theme["fg"])
         self.style.configure("TCheckbutton", background=theme["bg"], foreground=theme["fg"])
-        self.style.configure("TEntry", fieldbackground=theme["entry_bg"], foreground=theme["entry_fg"])
-        
+        self.style.configure(
+            "TEntry", fieldbackground=theme["entry_bg"], foreground=theme["entry_fg"]
+        )
+
         # Configure output text widget
         self.output.configure(
-            bg=theme["text_bg"],
-            fg=theme["text_fg"],
-            insertbackground=theme["text_fg"]
+            bg=theme["text_bg"], fg=theme["text_fg"], insertbackground=theme["text_fg"]
         )
         self.output.tag_config("error", foreground=self.light_theme["error"])
         self.output.tag_config("warning", foreground=self.light_theme["warning"])
         self.output.tag_config("info", foreground=self.light_theme["info"])
-    
+
     def _export_log(self):
         """Export the current contents of the output pane to a UTF-8 text file."""
         # Get the output text
         output_text = self.output.get(1.0, tk.END)
-        
+
         if not output_text.strip():
             messagebox.showinfo(APP_TITLE, "No log content to export.")
             return
-        
+
         # Ask user for save location
         timestamp = time.strftime("%Y%m%d_%H%M%S")
         default_filename = f"hemtt_log_{timestamp}.txt"
-        
+
         filepath = filedialog.asksaveasfilename(
             title="Export Log",
             defaultextension=".txt",
             initialfile=default_filename,
-            filetypes=[("Text files", "*.txt"), ("All files", "*.*")]
+            filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
         )
-        
+
         if filepath:
             try:
                 with open(filepath, "w", encoding="utf-8") as f:
@@ -307,27 +319,29 @@ class HemttGUI(tk.Tk):
         keyword matching and applies a text tag to colorize them.
         """
         self.output.configure(state=tk.NORMAL)
-        
+
         # Detect log level and apply appropriate color tag
         tag = None
         text_lower = text.lower()
-        
+
         # Check for error patterns
-        if any(pattern in text_lower for pattern in ['error', 'err:', 'fatal', 'failed', 'failure']):
+        if any(
+            pattern in text_lower for pattern in ["error", "err:", "fatal", "failed", "failure"]
+        ):
             tag = "error"
         # Check for warning patterns
-        elif any(pattern in text_lower for pattern in ['warning', 'warn:', 'caution']):
+        elif any(pattern in text_lower for pattern in ["warning", "warn:", "caution"]):
             tag = "warning"
         # Check for info patterns
-        elif any(pattern in text_lower for pattern in ['info', 'information', 'note:', 'hint:']):
+        elif any(pattern in text_lower for pattern in ["info", "information", "note:", "hint:"]):
             tag = "info"
-        
+
         # Insert text with appropriate tag
         if tag:
             self.output.insert(tk.END, text, tag)
         else:
             self.output.insert(tk.END, text)
-        
+
         self.output.see(tk.END)
         self.output.configure(state=tk.DISABLED)
 
@@ -353,7 +367,18 @@ class HemttGUI(tk.Tk):
     def _set_running(self, running: bool, command_str: str | None = None):
         """Enable/disable widgets and update status based on run state."""
         self.running = running
-        widgets = [self.btn_build, self.btn_release, self.btn_check, self.btn_dev, self.btn_utils_fnl, self.btn_ln_sort, self.btn_custom, self.custom_entry, self.verbose_check, self.pedantic_check]
+        widgets = [
+            self.btn_build,
+            self.btn_release,
+            self.btn_check,
+            self.btn_dev,
+            self.btn_utils_fnl,
+            self.btn_ln_sort,
+            self.btn_custom,
+            self.custom_entry,
+            self.verbose_check,
+            self.pedantic_check,
+        ]
         for w in widgets:
             if running:
                 w.state(["disabled"])  # type: ignore[attr-defined]
@@ -390,7 +415,9 @@ class HemttGUI(tk.Tk):
             resolved = shutil.which(hemtt)
             if resolved is None:
                 # Still allow to try, but warn user
-                if not messagebox.askyesno(APP_TITLE, "'hemtt' not found in PATH. Continue anyway?"):
+                if not messagebox.askyesno(
+                    APP_TITLE, "'hemtt' not found in PATH. Continue anyway?"
+                ):
                     return None
         return hemtt, proj
 
@@ -448,27 +475,27 @@ class HemttGUI(tk.Tk):
     # Button handlers
     def _run_build(self):
         """Run 'hemtt build'."""
-        self._run(["build"], supports_pedantic=True) 
+        self._run(["build"], supports_pedantic=True)
 
     def _run_release(self):
         """Run 'hemtt release'."""
-        self._run(["release"], supports_pedantic=True) 
+        self._run(["release"], supports_pedantic=True)
 
     def _run_check(self):
         """Run 'hemtt check'."""
-        self._run(["check"], supports_pedantic=True) 
+        self._run(["check"], supports_pedantic=True)
 
     def _run_dev(self):
         """Run 'hemtt dev'."""
-        self._run(["dev"], supports_pedantic=True) 
+        self._run(["dev"], supports_pedantic=True)
 
     def _run_utils_fnl(self):
         """Run 'hemtt utils fnl'."""
-        self._run(["utils", "fnl"], supports_pedantic=False) 
+        self._run(["utils", "fnl"], supports_pedantic=False)
 
     def _run_ln_sort(self):
         """Run 'hemtt ln sort'."""
-        self._run(["ln", "sort"], supports_pedantic=False) 
+        self._run(["ln", "sort"], supports_pedantic=False)
 
     def _run_custom(self):
         """Run a custom argument list typed by the user after 'hemtt'."""
