@@ -2,6 +2,12 @@
 
 A lightweight cross-platform (Windows-focused) Tkinter GUI wrapper for the `hemtt` CLI tool.
 
+## Screenshot
+
+Below is an example of the GUI in use (dark mode with build options visible).
+
+![HEMTT GUI Screenshot](assets/screenshot.png)
+
 ## Features
 
 - One-click core commands: `hemtt build`, `hemtt dev`, `hemtt check`, `hemtt release`, `hemtt launch`.

@@ -1,0 +1,20 @@
+┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+│ HEMTT executable: C:\Tools\hemtt.exe       [Browse…]                                         │
+│ Project directory: C:\Mods\MyProject       [Browse…]                                         │
+│ Arma 3 executable: C:\Steam\arma3.exe      [Browse…]                                         │
+├─────────────────────────────────────────────────────────────────────────────────────────────┤
+│ hemtt check  hemtt dev  hemtt launch  hemtt build  hemtt release   |   Cancel                │
+│ hemtt ln sort  hemtt ln coverage  hemtt utils fnl  hemtt book ℹ                                    │
+├─ Build/Dev Options ─────────────────────────────────────────────────────────────────────────┤
+│ [ ] Verbose (-v)   [ ] Pedantic (-p)   [ ] Binarize (--binarize)   [ ] No RAP (--no-rap)     │
+│ [ ] All Optionals (-O)                                                                        │
+│ Threads (-t): [ 4 ]   Optional addons (-o): [ compat,extra ]   Just (--just): [ core,items ] │
+├─────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Custom args (after 'hemtt'): [ dev --just core --just items ]        (Run)                   │
+├─────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Console Output (color-coded)                                                                │
+│ [INFO] Starting build...                                                                    │
+│ [WARN] Missing optional addon 'extra'                                                       │
+│ [ERROR] Failed to pack PBO                                                                  │
+└─────────────────────────────────────────────────────────────────────────────────────────────┘
+Status: Ready                                                                      Elapsed:
