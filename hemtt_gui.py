@@ -130,7 +130,13 @@ class HemttGUI(tk.Tk):
         out_frame = ttk.Frame(self, padding=8)
         out_frame.pack(fill=tk.BOTH, expand=True)
         self.output = scrolledtext.ScrolledText(
-            out_frame, height=20, wrap=tk.WORD, state=tk.DISABLED
+            out_frame,
+            height=20,
+            wrap=tk.WORD,
+            state=tk.DISABLED,
+            font=("Consolas", 10),
+            borderwidth=0,
+            relief=tk.FLAT,
         )
         self.output.pack(fill=tk.BOTH, expand=True)
 
@@ -161,22 +167,22 @@ class HemttGUI(tk.Tk):
             "fg": "black",
             "entry_bg": "white",
             "entry_fg": "black",
-            "text_bg": "white",
-            "text_fg": "black",
-            "error": "red",
-            "warning": "orange",
-            "info": "blue",
+            "text_bg": "#f5f5f5",
+            "text_fg": "#333333",
+            "error": "#cc0000",
+            "warning": "#ff8c00",
+            "info": "#0066cc",
         }
         self.dark_theme = {
             "bg": "#2d2d2d",
             "fg": "#d4d4d4",
             "entry_bg": "#3c3c3c",
             "entry_fg": "#d4d4d4",
-            "text_bg": "#1e1e1e",
-            "text_fg": "#d4d4d4",
-            "error": "#f48771",
-            "warning": "#dcdcaa",
-            "info": "#4fc1ff",
+            "text_bg": "#0c0c0c",
+            "text_fg": "#cccccc",
+            "error": "#ff5555",
+            "warning": "#ffff55",
+            "info": "#55ffff",
         }
         # Load dark mode preference from config
         self.dark_mode = self.config_data.get("dark_mode", False)
