@@ -1,9 +1,10 @@
 from __future__ import annotations
+
 import json
 import os
-from typing import Any, Dict
+from typing import Any
 
-DEFAULTS = {
+DEFAULTS: dict[str, Any] = {
     "hemtt_path": "hemtt",
     "project_dir": os.getcwd(),
     # UI preferences
@@ -21,7 +22,7 @@ def get_config_path() -> str:
     return os.path.join(base_dir, "config.json")
 
 
-def load_config() -> Dict[str, Any]:
+def load_config() -> dict[str, Any]:
     """Load configuration from disk or return defaults on failure.
 
     Returns
@@ -33,7 +34,7 @@ def load_config() -> Dict[str, Any]:
     if not os.path.isfile(path):
         return DEFAULTS.copy()
     try:
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             data = json.load(f)
             if not isinstance(data, dict):
                 return DEFAULTS.copy()
@@ -45,7 +46,7 @@ def load_config() -> Dict[str, Any]:
         return DEFAULTS.copy()
 
 
-def save_config(data: Dict[str, Any]) -> None:
+def save_config(data: dict[str, Any]) -> None:
     """Persist the provided configuration dictionary to disk as JSON."""
     path = get_config_path()
     try:

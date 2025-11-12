@@ -1,9 +1,9 @@
 import os
-import time
 import queue
 import shutil
+import time
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
+from tkinter import filedialog, messagebox, ttk
 from tkinter import scrolledtext
 
 from config_store import load_config, save_config
@@ -26,11 +26,10 @@ class HemttGUI(tk.Tk):
         self.protocol("WM_DELETE_WINDOW", self.on_close)
 
         # State
-        self.output_queue: "queue.Queue[str]" = queue.Queue()
+        self.output_queue: queue.Queue[str] = queue.Queue()
         self.runner: CommandRunner | None = None
         self.running: bool = False
         self.start_time: float = 0.0
-        self.current_command: list[str] | None = None
         self.dark_mode: bool = False
 
         # Load config
@@ -425,7 +424,6 @@ class HemttGUI(tk.Tk):
             full_args.append("-p")
 
         cmd = build_command(hemtt, full_args)
-        self.current_command = cmd
         self._set_running(True, " ".join(cmd))
 
         self.runner = CommandRunner(

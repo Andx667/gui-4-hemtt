@@ -1,9 +1,10 @@
 from __future__ import annotations
+
 import os
 import re
 import subprocess
 import threading
-from typing import Callable, Optional
+from collections.abc import Callable
 
 
 def strip_ansi_codes(text: str) -> str:
@@ -47,10 +48,10 @@ class CommandRunner:
     def __init__(
         self,
         command: list[str],
-        cwd: Optional[str] = None,
-        on_output: Optional[Callable[[str], None]] = None,
-        on_exit: Optional[Callable[[int], None]] = None,
-        env: Optional[dict[str, str]] = None,
+        cwd: str | None = None,
+        on_output: Callable[[str], None] | None = None,
+        on_exit: Callable[[int], None] | None = None,
+        env: dict[str, str] | None = None,
     ) -> None:
         """Initialize a background command runner.
 

@@ -1,7 +1,8 @@
-import unittest
 import os
+import unittest
+
 from command_runner import build_command
-from config_store import load_config, save_config, get_config_path
+from config_store import get_config_path, load_config, save_config
 
 class TestHemttGUIHelpers(unittest.TestCase):
     def test_build_command(self):
