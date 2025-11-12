@@ -4,19 +4,37 @@ A lightweight cross-platform (Windows-focused) Tkinter GUI wrapper for the `hemt
 
 ## Features
 
-- Run common commands: `hemtt build`, `hemtt release`, `hemtt ln sort` via buttons.
-- Run arbitrary custom command arguments (see [hemtt Book](http://hemtt.dev)).
-- Live streaming output pane with scrolling.
-- Cancel running command.
-- Select `hemtt` executable and project directory; persisted locally to `config.json`.
-- Elapsed time and status bar.
+- One-click core commands: `hemtt build`, `hemtt dev`, `hemtt check`, `hemtt release`, `hemtt launch`.
+- Extended commands: `hemtt localization sort`, `hemtt localization coverage`, `hemtt license`, `hemtt script <name>`, `hemtt value <key>`, `hemtt utils fnl`, `hemtt new <project>`.
+- Launch dialog with profiles, instances, executable override, optionals, quick mode, passthrough arguments (`--`), binarize options.
+- Build/Dev option toggles: `--binarize`, `--no-rap`, `--all-optionals` (`-O`), `--optional <addon>` (comma list), `--just <addon>`, threads (`-t`).
+- Dark / Light mode toggle with styled controls.
+- Drag & Drop a folder anywhere in the window to set the project directory (optional dependency).
+- Persistent paths: HEMTT executable, project directory, Arma 3 executable stored in `config.json`.
+- Export log to timestamped text file.
+- Color-coded console output with basic severity detection (error / warning / info).
+- Elapsed time and status bar with live update.
+- New project dialog (wrapper for `hemtt new`).
+- License dialog (choose common licenses or interactive mode).
+- Script/value dialogs for quick execution.
+- Cancellation of running process.
+- Custom argument entry (after `hemtt`).
 
 ## Requirements
 
 - Python 3.11+ (3.9+ may work; not tested).
-- `hemtt` installed and available in PATH, or you can browse to an executable.
+- `hemtt` installed and available in PATH, or set via browse.
+- Tkinter (ships with CPython).
 
-Tkinter ships with the standard CPython distribution; no external dependencies required.
+### Optional (for Drag & Drop)
+
+To enable drag-and-drop of a project folder:
+
+```pwsh
+pip install tkinterdnd2
+```
+
+If `tkinterdnd2` is not installed, the app functions normally without drag-and-drop.
 
 ## Running
 
@@ -35,6 +53,12 @@ validate
 ```
 
 Then press Run.
+
+You can also use multiple flags, e.g.
+
+```text
+dev --just core --just weapons -v -v
+```
 
 ## Packaging (Windows executable)
 
@@ -72,15 +96,18 @@ Trigger it by publishing a new Release in GitHub (or run manually via the Action
 ## Limitations / Future Improvements
 
 - No progress bar (HEMTT doesn't emit structured progress; could parse lines heuristically).
-- Could support a list of favorite custom commands.
+- Potential future: favorites list, output filtering (errors only), command history dropdown.
+- Could add auto-switch to new project directory after `hemtt new` completes.
 
 ## Troubleshooting
 
 | Issue | Fix |
 |-------|-----|
 | `hemtt` not found | Ensure it's installed or browse to executable. |
-| GUI freezes | Shouldn't happen; output is threaded. Report the issue. |
-| No output until end | Some commands may buffer; consider adding `--no-buffer` if supported. |
+| Drag & Drop not working | Install `tkinterdnd2` and restart app. |
+| GUI freezes | Shouldn't happen; output runs in thread. Report issue. |
+| No output until end | Some commands may buffer; run with extra verbosity (`-v`, `-vv`). |
+| License dialog shows none | Run without selecting a license for interactive mode. |
 
 ## License
 
