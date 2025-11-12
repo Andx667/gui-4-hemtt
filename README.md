@@ -23,7 +23,7 @@ Tkinter ships with the standard CPython distribution; no external dependencies r
 ```pwsh
 python hemtt_gui.py
 ```
- 
+
 Use the Browse buttons to set your project directory and (optionally) the `hemtt` executable path.
 
 ## Custom Commands
@@ -33,7 +33,7 @@ Enter additional arguments exactly as you would after `hemtt` on the CLI. Exampl
 ```text
 validate
 ```
- 
+
 Then press Run.
 
 ## Packaging (Windows executable)
@@ -44,7 +44,7 @@ Using PyInstaller to create a single-folder distribution:
 pip install pyinstaller
 pyinstaller --name HemttGUI --windowed --onefile hemtt_gui.py
 ```
- 
+
 This will produce `dist/HemttGUI.exe`. Distribute that file along with a README if desired.
 
 If you need to embed an icon:
@@ -84,4 +84,4 @@ Trigger it by publishing a new Release in GitHub (or run manually via the Action
 
 ## License
 
-You may adapt and reuse freely (consider adding your own license header if distributing).
+[MIT LICENSE](LICENSE)
