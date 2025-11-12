@@ -5,7 +5,7 @@ A lightweight cross-platform (Windows-focused) Tkinter GUI wrapper for the `hemt
 ## Features
 
 - One-click core commands: `hemtt build`, `hemtt dev`, `hemtt check`, `hemtt release`, `hemtt launch`.
-- Extended commands: `hemtt localization sort`, `hemtt localization coverage`, `hemtt license`, `hemtt script <name>`, `hemtt value <key>`, `hemtt utils fnl`, `hemtt new <project>`.
+- Extended commands: `hemtt ln sort`, `hemtt ln coverage`, `hemtt license`, `hemtt script <name>`, `hemtt utils fnl`, `hemtt new <project>`.
 - Launch dialog with profiles, instances, executable override, optionals, quick mode, passthrough arguments (`--`), binarize options.
 - Build/Dev option toggles: `--binarize`, `--no-rap`, `--all-optionals` (`-O`), `--optional <addon>` (comma list), `--just <addon>`, threads (`-t`).
 - Dark / Light mode toggle with styled controls.
@@ -16,7 +16,7 @@ A lightweight cross-platform (Windows-focused) Tkinter GUI wrapper for the `hemt
 - Elapsed time and status bar with live update.
 - New project dialog (wrapper for `hemtt new`).
 - License dialog (choose common licenses or interactive mode).
-- Script/value dialogs for quick execution.
+- Script dialog for quick execution.
 - Cancellation of running process.
 - Custom argument entry (after `hemtt`).
 

@@ -104,10 +104,12 @@ class HemttGUI(tk.Tk):
         btns2.pack(fill=tk.X)
 
         self.btn_ln_sort = ttk.Button(btns2, text="hemtt ln sort", command=self._run_ln_sort)
+        self.btn_ln_coverage = ttk.Button(btns2, text="hemtt ln coverage", command=self._run_ln_coverage)
         self.btn_utils_fnl = ttk.Button(btns2, text="hemtt utils fnl", command=self._run_utils_fnl)
         self.btn_book = ttk.Button(btns2, text="hemtt book", command=self._open_book)
 
         self.btn_ln_sort.pack(side=tk.LEFT, padx=(0, 8))
+        self.btn_ln_coverage.pack(side=tk.LEFT, padx=(0, 8))
         self.btn_utils_fnl.pack(side=tk.LEFT, padx=(0, 8))
         self.btn_book.pack(side=tk.LEFT)
 
@@ -540,6 +542,7 @@ class HemttGUI(tk.Tk):
             self.btn_launch,
             self.btn_utils_fnl,
             self.btn_ln_sort,
+            self.btn_ln_coverage,
             self.btn_custom,
             self.custom_entry,
             self.verbose_check,
@@ -699,6 +702,10 @@ class HemttGUI(tk.Tk):
     def _run_ln_sort(self):
         """Run 'hemtt ln sort'."""
         self._run(["ln", "sort"], supports_pedantic=False)
+
+    def _run_ln_coverage(self):
+        """Run 'hemtt ln coverage'."""
+        self._run(["ln", "coverage"], supports_pedantic=False)
 
     def _run_custom(self):
         """Run a custom argument list typed by the user after 'hemtt'."""
