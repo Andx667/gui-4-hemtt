@@ -15,7 +15,13 @@ APP_TITLE = "HEMTT GUI"
 
 
 class HemttGUI(tk.Tk):
+    """Tkinter-based GUI wrapper around the HEMTT CLI.
+
+    Provides buttons for common commands, live process output, and user
+    preferences such as dark mode and verbosity toggles.
+    """
     def __init__(self):
+        """Initialize the main application window and state."""
         super().__init__()
         self.title(APP_TITLE)
         self.minsize(800, 500)
@@ -38,6 +44,7 @@ class HemttGUI(tk.Tk):
         self._poll_output_queue()
 
     def _build_ui(self):
+        """Create and lay out all UI widgets."""
         # Top frame for paths
         top = ttk.Frame(self, padding=8)
         top.pack(fill=tk.X)
@@ -143,7 +150,7 @@ class HemttGUI(tk.Tk):
         self.elapsed_label.pack(side=tk.RIGHT)
 
     def _setup_themes(self):
-        """Setup light and dark mode color schemes."""
+        """Setup light and dark mode color schemes and apply initial theme."""
         self.style = ttk.Style()
         
         self.light_theme = {
@@ -176,6 +183,7 @@ class HemttGUI(tk.Tk):
             self._apply_light_mode()
 
     def _load_config_into_ui(self):
+        """Populate the UI from the persisted configuration file."""
         hemtt_path = self.config_data.get("hemtt_path") or "hemtt"
         proj_dir = self.config_data.get("project_dir") or os.getcwd()
         self.hemtt_var.set(hemtt_path)
@@ -185,6 +193,7 @@ class HemttGUI(tk.Tk):
         self.pedantic_var.set(bool(self.config_data.get("pedantic", False)))
 
     def _browse_hemtt(self):
+        """Open a file dialog to select the HEMTT executable and persist path."""
         initial = self.hemtt_var.get() or os.getcwd()
         path = filedialog.askopenfilename(title="Select HEMTT executable", initialdir=os.path.dirname(initial),
                                           filetypes=[("Executable", "*"), ("All files", "*.*")])
@@ -193,6 +202,7 @@ class HemttGUI(tk.Tk):
             self._persist_config()
 
     def _browse_project(self):
+        """Open a folder dialog to select the project directory and persist it."""
         initial = self.proj_var.get() or os.getcwd()
         path = filedialog.askdirectory(title="Select project directory", initialdir=initial)
         if path:
@@ -200,6 +210,7 @@ class HemttGUI(tk.Tk):
             self._persist_config()
 
     def _persist_config(self):
+        """Write current UI settings and preferences to the config file."""
         save_config({
             "hemtt_path": self.hemtt_var.get().strip() or "hemtt",
             "project_dir": self.proj_var.get().strip() or os.getcwd(),
@@ -209,7 +220,7 @@ class HemttGUI(tk.Tk):
         })
     
     def _toggle_dark_mode(self):
-        """Toggle between light and dark mode."""
+        """Toggle between light and dark mode and persist preference."""
         self.dark_mode = not self.dark_mode
         if self.dark_mode:
             self._apply_dark_mode()
@@ -218,7 +229,7 @@ class HemttGUI(tk.Tk):
         self._persist_config()
     
     def _apply_dark_mode(self):
-        """Apply dark mode colors to entire GUI."""
+        """Apply dark mode colors to the entire GUI and text tags."""
         theme = self.dark_theme
         
         # Configure main window
@@ -242,7 +253,7 @@ class HemttGUI(tk.Tk):
         self.output.tag_config("info", foreground=theme["info"])
     
     def _apply_light_mode(self):
-        """Apply light mode colors to entire GUI."""
+        """Apply light mode colors to the entire GUI and text tags."""
         theme = self.light_theme
         
         # Configure main window
@@ -266,7 +277,7 @@ class HemttGUI(tk.Tk):
         self.output.tag_config("info", foreground=self.light_theme["info"])
     
     def _export_log(self):
-        """Export the output log to a text file."""
+        """Export the current contents of the output pane to a UTF-8 text file."""
         # Get the output text
         output_text = self.output.get(1.0, tk.END)
         
@@ -294,6 +305,11 @@ class HemttGUI(tk.Tk):
                 messagebox.showerror(APP_TITLE, f"Failed to export log:\n{e}")
 
     def _append_output(self, text: str):
+        """Append a line to the output widget with basic severity highlighting.
+
+        The method classifies lines as error/warning/info based on simple
+        keyword matching and applies a text tag to colorize them.
+        """
         self.output.configure(state=tk.NORMAL)
         
         # Detect log level and apply appropriate color tag
@@ -320,9 +336,11 @@ class HemttGUI(tk.Tk):
         self.output.configure(state=tk.DISABLED)
 
     def _enqueue_output(self, text: str):
+        """Queue text from the background runner for UI-thread insertion."""
         self.output_queue.put(text)
 
     def _poll_output_queue(self):
+        """Drain the output queue periodically and update elapsed time."""
         try:
             while True:
                 text = self.output_queue.get_nowait()
@@ -337,6 +355,7 @@ class HemttGUI(tk.Tk):
         self.after(100, self._poll_output_queue)
 
     def _set_running(self, running: bool, command_str: str | None = None):
+        """Enable/disable widgets and update status based on run state."""
         self.running = running
         widgets = [self.btn_build, self.btn_release, self.btn_check, self.btn_dev, self.btn_utils_fnl, self.btn_ln_sort, self.btn_custom, self.custom_entry, self.verbose_check, self.pedantic_check]
         for w in widgets:
@@ -354,6 +373,11 @@ class HemttGUI(tk.Tk):
             self.start_time = 0.0
 
     def _validated_paths(self) -> tuple[str, str] | None:
+        """Validate and resolve the HEMTT executable and project directory.
+
+        Returns a tuple of (hemtt_path, project_dir) when valid, or None if
+        validation fails and the user cancels.
+        """
         hemtt = self.hemtt_var.get().strip() or "hemtt"
         proj = self.proj_var.get().strip() or os.getcwd()
 
@@ -375,6 +399,15 @@ class HemttGUI(tk.Tk):
         return hemtt, proj
 
     def _run(self, args: list[str], supports_pedantic: bool = True):
+        """Start running a HEMTT command with optional flags.
+
+        Parameters
+        ----------
+        args: list[str]
+            Arguments after the 'hemtt' executable (e.g., ["build"]).
+        supports_pedantic: bool
+            Whether to append the '-p' flag when the pedantic option is set.
+        """
         validated = self._validated_paths()
         if not validated:
             return
@@ -406,35 +439,44 @@ class HemttGUI(tk.Tk):
         self.runner.start()
 
     def _on_command_exit(self, returncode: int):
+        """Handle process termination and update UI state."""
         self._enqueue_output(f"\n[Process exited with code {returncode}]\n")
         self._set_running(False)
         self.runner = None
 
     def _cancel_run(self):
+        """Request cancellation of the running process, if any."""
         if self.runner:
             self.runner.cancel()
             self._enqueue_output("\n[Cancellation requested]\n")
 
     # Button handlers
     def _run_build(self):
+        """Run 'hemtt build'."""
         self._run(["build"], supports_pedantic=True) 
 
     def _run_release(self):
+        """Run 'hemtt release'."""
         self._run(["release"], supports_pedantic=True) 
 
     def _run_check(self):
+        """Run 'hemtt check'."""
         self._run(["check"], supports_pedantic=True) 
 
     def _run_dev(self):
+        """Run 'hemtt dev'."""
         self._run(["dev"], supports_pedantic=True) 
 
     def _run_utils_fnl(self):
+        """Run 'hemtt utils fnl'."""
         self._run(["utils", "fnl"], supports_pedantic=False) 
 
     def _run_ln_sort(self):
+        """Run 'hemtt ln sort'."""
         self._run(["ln", "sort"], supports_pedantic=False) 
 
     def _run_custom(self):
+        """Run a custom argument list typed by the user after 'hemtt'."""
         extra = self.custom_var.get().strip()
         if not extra:
             messagebox.showinfo(APP_TITLE, "Enter custom arguments, e.g. 'validate'")
@@ -444,6 +486,7 @@ class HemttGUI(tk.Tk):
         self._run(args, supports_pedantic=False)
 
     def on_close(self):
+        """Prompt on close if a command is running, then persist and exit."""
         if self.runner and self.runner.is_running:
             if not messagebox.askyesno(APP_TITLE, "A command is still running. Exit anyway?"):
                 return
@@ -452,6 +495,7 @@ class HemttGUI(tk.Tk):
 
 
 def main():
+    """Entrypoint to start the Tkinter application."""
     app = HemttGUI()
     app.mainloop()
 

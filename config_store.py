@@ -15,12 +15,20 @@ DEFAULTS = {
 
 
 def get_config_path() -> str:
+    """Return the absolute path to the local configuration JSON file."""
     # Store alongside the app by default for simplicity
     base_dir = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(base_dir, "config.json")
 
 
 def load_config() -> Dict[str, Any]:
+    """Load configuration from disk or return defaults on failure.
+
+    Returns
+    -------
+    Dict[str, Any]
+        A dictionary containing configuration values merged with DEFAULTS.
+    """
     path = get_config_path()
     if not os.path.isfile(path):
         return DEFAULTS.copy()
@@ -38,6 +46,7 @@ def load_config() -> Dict[str, Any]:
 
 
 def save_config(data: Dict[str, Any]) -> None:
+    """Persist the provided configuration dictionary to disk as JSON."""
     path = get_config_path()
     try:
         with open(path, "w", encoding="utf-8") as f:
