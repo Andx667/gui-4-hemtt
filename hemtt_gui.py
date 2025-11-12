@@ -106,7 +106,8 @@ class HemttGUI(tk.Tk):
         self.btn_ln_sort = ttk.Button(btns2, text="hemtt ln sort", command=self._run_ln_sort)
         self.btn_ln_coverage = ttk.Button(btns2, text="hemtt ln coverage", command=self._run_ln_coverage)
         self.btn_utils_fnl = ttk.Button(btns2, text="hemtt utils fnl", command=self._run_utils_fnl)
-        self.btn_book = ttk.Button(btns2, text="hemtt book", command=self._open_book)
+        # Add an info icon using a Unicode info symbol for clarity
+        self.btn_book = ttk.Button(btns2, text="hemtt book ℹ", command=self._open_book)
 
         self.btn_ln_sort.pack(side=tk.LEFT, padx=(0, 8))
         self.btn_ln_coverage.pack(side=tk.LEFT, padx=(0, 8))
