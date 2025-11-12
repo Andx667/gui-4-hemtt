@@ -144,16 +144,26 @@ class HemttGUI(tk.Tk):
 
     def _setup_themes(self):
         """Setup light and dark mode color schemes."""
+        self.style = ttk.Style()
+        
         self.light_theme = {
-            "bg": "white",
+            "bg": "#f0f0f0",
             "fg": "black",
+            "entry_bg": "white",
+            "entry_fg": "black",
+            "text_bg": "white",
+            "text_fg": "black",
             "error": "red",
             "warning": "orange",
             "info": "blue"
         }
         self.dark_theme = {
-            "bg": "#1e1e1e",
+            "bg": "#2d2d2d",
             "fg": "#d4d4d4",
+            "entry_bg": "#3c3c3c",
+            "entry_fg": "#d4d4d4",
+            "text_bg": "#1e1e1e",
+            "text_fg": "#d4d4d4",
             "error": "#f48771",
             "warning": "#dcdcaa",
             "info": "#4fc1ff"
@@ -162,6 +172,8 @@ class HemttGUI(tk.Tk):
         self.dark_mode = self.config_data.get("dark_mode", False)
         if self.dark_mode:
             self._apply_dark_mode()
+        else:
+            self._apply_light_mode()
 
     def _load_config_into_ui(self):
         hemtt_path = self.config_data.get("hemtt_path") or "hemtt"
@@ -201,22 +213,48 @@ class HemttGUI(tk.Tk):
         self._persist_config()
     
     def _apply_dark_mode(self):
-        """Apply dark mode colors."""
+        """Apply dark mode colors to entire GUI."""
+        theme = self.dark_theme
+        
+        # Configure main window
+        self.configure(bg=theme["bg"])
+        
+        # Configure ttk styles
+        self.style.configure("TFrame", background=theme["bg"])
+        self.style.configure("TLabel", background=theme["bg"], foreground=theme["fg"])
+        self.style.configure("TButton", background=theme["bg"], foreground=theme["fg"])
+        self.style.configure("TCheckbutton", background=theme["bg"], foreground=theme["fg"])
+        self.style.configure("TEntry", fieldbackground=theme["entry_bg"], foreground=theme["entry_fg"])
+        
+        # Configure output text widget
         self.output.configure(
-            bg=self.dark_theme["bg"],
-            fg=self.dark_theme["fg"],
-            insertbackground=self.dark_theme["fg"]
+            bg=theme["text_bg"],
+            fg=theme["text_fg"],
+            insertbackground=theme["text_fg"]
         )
-        self.output.tag_config("error", foreground=self.dark_theme["error"])
-        self.output.tag_config("warning", foreground=self.dark_theme["warning"])
-        self.output.tag_config("info", foreground=self.dark_theme["info"])
+        self.output.tag_config("error", foreground=theme["error"])
+        self.output.tag_config("warning", foreground=theme["warning"])
+        self.output.tag_config("info", foreground=theme["info"])
     
     def _apply_light_mode(self):
-        """Apply light mode colors."""
+        """Apply light mode colors to entire GUI."""
+        theme = self.light_theme
+        
+        # Configure main window
+        self.configure(bg=theme["bg"])
+        
+        # Configure ttk styles
+        self.style.configure("TFrame", background=theme["bg"])
+        self.style.configure("TLabel", background=theme["bg"], foreground=theme["fg"])
+        self.style.configure("TButton", background=theme["bg"], foreground=theme["fg"])
+        self.style.configure("TCheckbutton", background=theme["bg"], foreground=theme["fg"])
+        self.style.configure("TEntry", fieldbackground=theme["entry_bg"], foreground=theme["entry_fg"])
+        
+        # Configure output text widget
         self.output.configure(
-            bg=self.light_theme["bg"],
-            fg=self.light_theme["fg"],
-            insertbackground=self.light_theme["fg"]
+            bg=theme["text_bg"],
+            fg=theme["text_fg"],
+            insertbackground=theme["text_fg"]
         )
         self.output.tag_config("error", foreground=self.light_theme["error"])
         self.output.tag_config("warning", foreground=self.light_theme["warning"])
