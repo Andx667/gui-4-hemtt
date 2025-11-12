@@ -1,14 +1,12 @@
 import os
-import sys
 import time
 import queue
-import threading
 import shutil
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from tkinter import scrolledtext
 
-from config_store import load_config, save_config, get_config_path
+from config_store import load_config, save_config
 from command_runner import CommandRunner, build_command
 
 APP_TITLE = "HEMTT GUI"
