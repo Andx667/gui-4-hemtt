@@ -6,6 +6,11 @@ from typing import Any, Dict
 DEFAULTS = {
     "hemtt_path": "hemtt",
     "project_dir": os.getcwd(),
+    # UI preferences
+    "dark_mode": False,
+    # Option toggles
+    "verbose": False,
+    "pedantic": False,
 }
 
 

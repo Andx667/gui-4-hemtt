@@ -180,6 +180,9 @@ class HemttGUI(tk.Tk):
         proj_dir = self.config_data.get("project_dir") or os.getcwd()
         self.hemtt_var.set(hemtt_path)
         self.proj_var.set(proj_dir)
+        # Load option toggles
+        self.verbose_var.set(bool(self.config_data.get("verbose", False)))
+        self.pedantic_var.set(bool(self.config_data.get("pedantic", False)))
 
     def _browse_hemtt(self):
         initial = self.hemtt_var.get() or os.getcwd()
@@ -201,6 +204,8 @@ class HemttGUI(tk.Tk):
             "hemtt_path": self.hemtt_var.get().strip() or "hemtt",
             "project_dir": self.proj_var.get().strip() or os.getcwd(),
             "dark_mode": self.dark_mode,
+            "verbose": bool(self.verbose_var.get()),
+            "pedantic": bool(self.pedantic_var.get()),
         })
     
     def _toggle_dark_mode(self):
@@ -369,7 +374,7 @@ class HemttGUI(tk.Tk):
                     return None
         return hemtt, proj
 
-    def _run(self, args: list[str]):
+    def _run(self, args: list[str], supports_pedantic: bool = True):
         validated = self._validated_paths()
         if not validated:
             return
@@ -385,7 +390,7 @@ class HemttGUI(tk.Tk):
         full_args = args.copy()
         if self.verbose_var.get():
             full_args.append("-v")
-        if self.pedantic_var.get():
+        if supports_pedantic and self.pedantic_var.get():
             full_args.append("-p")
 
         cmd = build_command(hemtt, full_args)
@@ -412,22 +417,22 @@ class HemttGUI(tk.Tk):
 
     # Button handlers
     def _run_build(self):
-        self._run(["build"]) 
+        self._run(["build"], supports_pedantic=True) 
 
     def _run_release(self):
-        self._run(["release"]) 
+        self._run(["release"], supports_pedantic=True) 
 
     def _run_check(self):
-        self._run(["check"]) 
+        self._run(["check"], supports_pedantic=True) 
 
     def _run_dev(self):
-        self._run(["dev"]) 
+        self._run(["dev"], supports_pedantic=True) 
 
     def _run_utils_fnl(self):
-        self._run(["utils", "fnl"]) 
+        self._run(["utils", "fnl"], supports_pedantic=False) 
 
     def _run_ln_sort(self):
-        self._run(["ln", "sort"]) 
+        self._run(["ln", "sort"], supports_pedantic=False) 
 
     def _run_custom(self):
         extra = self.custom_var.get().strip()
@@ -435,7 +440,8 @@ class HemttGUI(tk.Tk):
             messagebox.showinfo(APP_TITLE, "Enter custom arguments, e.g. 'validate'")
             return
         args = [a for a in extra.split(" ") if a]
-        self._run(args)
+        # Pedantic (-p) is only supported for build, check, dev, release
+        self._run(args, supports_pedantic=False)
 
     def on_close(self):
         if self.runner and self.runner.is_running:

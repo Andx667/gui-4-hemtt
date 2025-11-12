@@ -1,5 +1,7 @@
 {
   "hemtt_path": "hemtt",
   "project_dir": "C:/Users/andyb/Workspace/ttt_pm",
-  "dark_mode": false
+  "dark_mode": false,
+  "verbose": false,
+  "pedantic": false
 }
