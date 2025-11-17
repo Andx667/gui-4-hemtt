@@ -122,8 +122,6 @@ class CommandRunner:
             )
             assert self.process.stdout is not None
             for line in self.process.stdout:
-                if line is None:
-                    break
                 # Strip ANSI escape codes before sending to output
                 clean_line = strip_ansi_codes(line)
                 self.on_output(clean_line)
