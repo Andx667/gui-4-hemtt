@@ -821,14 +821,15 @@ class HemttGUI(tk.Tk):
         self.destroy()
 
 
-class CheckDialog(tk.Toplevel):
-    """Dialog for configuring hemtt check options."""
+class BaseCommandDialog(tk.Toplevel):
+    """Base class for HEMTT command configuration dialogs."""
 
-    def __init__(self, parent):
+    def __init__(self, parent, title: str):
         super().__init__(parent)
-        self.title("HEMTT Check Configuration")
+        self.title(title)
         self.resizable(False, False)
         self.result = None
+        self.parent = parent
 
         self.transient(parent)
         self.grab_set()
@@ -836,6 +837,82 @@ class CheckDialog(tk.Toplevel):
         # Apply dark mode if parent is in dark mode
         if parent.dark_mode:
             self.configure(bg=parent.dark_theme["bg"])
+
+    def _center_on_parent(self):
+        """Center the dialog on the parent window."""
+        self.update_idletasks()
+        x = self.parent.winfo_x() + (self.parent.winfo_width() - self.winfo_width()) // 2
+        y = self.parent.winfo_y() + (self.parent.winfo_height() - self.winfo_height()) // 2
+        self.geometry(f"+{x}+{y}")
+
+    def _create_global_options_frame(self) -> ttk.LabelFrame:
+        """Create the standard global options frame with verbosity and threads."""
+        global_frame = ttk.LabelFrame(self, text="Global Options", padding=10)
+        global_frame.pack(fill=tk.X, padx=10, pady=5)
+
+        # Verbosity level
+        verbose_frame = ttk.Frame(global_frame)
+        verbose_frame.pack(fill=tk.X, pady=2)
+        verbose_label = ttk.Label(verbose_frame, text="Verbosity:")
+        verbose_label.pack(side=tk.LEFT)
+        self.parent._create_tooltip(
+            verbose_label, "None: Normal output\n-v: Debug output\n-vv: Trace output"
+        )
+
+        self.verbose_var = tk.StringVar(value="none")
+        ttk.Radiobutton(verbose_frame, text="None", variable=self.verbose_var, value="none").pack(
+            side=tk.LEFT, padx=5
+        )
+        ttk.Radiobutton(
+            verbose_frame, text="-v (Debug)", variable=self.verbose_var, value="v"
+        ).pack(side=tk.LEFT, padx=5)
+        ttk.Radiobutton(
+            verbose_frame, text="-vv (Trace)", variable=self.verbose_var, value="vv"
+        ).pack(side=tk.LEFT, padx=5)
+
+        # Threads
+        threads_frame = ttk.Frame(global_frame)
+        threads_frame.pack(fill=tk.X, pady=2)
+        ttk.Label(threads_frame, text="Threads (-t):").pack(side=tk.LEFT)
+        self.threads_var = tk.StringVar()
+        ttk.Spinbox(threads_frame, from_=1, to=32, textvariable=self.threads_var, width=5).pack(
+            side=tk.LEFT, padx=5
+        )
+
+        return global_frame
+
+    def _create_button_frame(self, on_run_callback, on_cancel_callback):
+        """Create the standard button frame with Run and Cancel buttons."""
+        btn_frame = ttk.Frame(self, padding=10)
+        btn_frame.pack(fill=tk.X)
+        ttk.Button(btn_frame, text="Run", command=on_run_callback).pack(side=tk.RIGHT, padx=(5, 0))
+        ttk.Button(btn_frame, text="Cancel", command=on_cancel_callback).pack(side=tk.RIGHT)
+
+    def _add_verbosity_to_args(self, args: list[str]):
+        """Add verbosity flags to args based on verbose_var."""
+        verbose = self.verbose_var.get()
+        if verbose == "v":
+            args.append("-v")
+        elif verbose == "vv":
+            args.extend(["-v", "-v"])
+
+    def _add_threads_to_args(self, args: list[str]):
+        """Add threads flag to args if specified."""
+        threads = self.threads_var.get().strip()
+        if threads:
+            args.extend(["-t", threads])
+
+    def _on_cancel(self):
+        """Cancel the dialog without setting result."""
+        self.result = None
+        self.destroy()
+
+
+class CheckDialog(BaseCommandDialog):
+    """Dialog for configuring hemtt check options."""
+
+    def __init__(self, parent):
+        super().__init__(parent, "HEMTT Check Configuration")
 
         # Check options
         options_frame = ttk.LabelFrame(self, text="Check Options", padding=10)
@@ -858,50 +935,12 @@ class CheckDialog(tk.Toplevel):
         )
 
         # Global options
-        global_frame = ttk.LabelFrame(self, text="Global Options", padding=10)
-        global_frame.pack(fill=tk.X, padx=10, pady=5)
-
-        # Verbosity level
-        verbose_frame = ttk.Frame(global_frame)
-        verbose_frame.pack(fill=tk.X, pady=2)
-        verbose_label = ttk.Label(verbose_frame, text="Verbosity:")
-        verbose_label.pack(side=tk.LEFT)
-        parent._create_tooltip(
-            verbose_label, "None: Normal output\n-v: Debug output\n-vv: Trace output"
-        )
-
-        self.verbose_var = tk.StringVar(value="none")
-        ttk.Radiobutton(verbose_frame, text="None", variable=self.verbose_var, value="none").pack(
-            side=tk.LEFT, padx=5
-        )
-        ttk.Radiobutton(
-            verbose_frame, text="-v (Debug)", variable=self.verbose_var, value="v"
-        ).pack(side=tk.LEFT, padx=5)
-        ttk.Radiobutton(
-            verbose_frame, text="-vv (Trace)", variable=self.verbose_var, value="vv"
-        ).pack(side=tk.LEFT, padx=5)
-
-        threads_frame = ttk.Frame(global_frame)
-        threads_frame.pack(fill=tk.X, pady=2)
-        ttk.Label(threads_frame, text="Threads (-t):").pack(side=tk.LEFT)
-        self.threads_var = tk.StringVar()
-        ttk.Spinbox(threads_frame, from_=1, to=32, textvariable=self.threads_var, width=5).pack(
-            side=tk.LEFT, padx=5
-        )
+        self._create_global_options_frame()
 
         # Buttons
-        btn_frame = ttk.Frame(self, padding=10)
-        btn_frame.pack(fill=tk.X)
-        ttk.Button(btn_frame, text="Run", command=self._on_run).pack(side=tk.RIGHT, padx=(5, 0))
-        ttk.Button(btn_frame, text="Cancel", command=self._on_cancel).pack(side=tk.RIGHT)
+        self._create_button_frame(self._on_run, self._on_cancel)
 
-        self._center_on_parent(parent)
-
-    def _center_on_parent(self, parent):
-        self.update_idletasks()
-        x = parent.winfo_x() + (parent.winfo_width() - self.winfo_width()) // 2
-        y = parent.winfo_y() + (parent.winfo_height() - self.winfo_height()) // 2
-        self.geometry(f"+{x}+{y}")
+        self._center_on_parent()
 
     def _on_run(self):
         args = ["check"]
@@ -916,39 +955,18 @@ class CheckDialog(tk.Toplevel):
                 if lint:
                     args.extend(["-L", lint])
 
-        verbose = self.verbose_var.get()
-        if verbose == "v":
-            args.append("-v")
-        elif verbose == "vv":
-            args.extend(["-vv"])
-
-        threads = self.threads_var.get().strip()
-        if threads:
-            args.extend(["-t", threads])
+        self._add_verbosity_to_args(args)
+        self._add_threads_to_args(args)
 
         self.result = args[1:]  # Remove "check" since it's added by caller
         self.destroy()
 
-    def _on_cancel(self):
-        self.result = None
-        self.destroy()
 
-
-class DevDialog(tk.Toplevel):
+class DevDialog(BaseCommandDialog):
     """Dialog for configuring hemtt dev options."""
 
     def __init__(self, parent):
-        super().__init__(parent)
-        self.title("HEMTT Dev Configuration")
-        self.resizable(False, False)
-        self.result = None
-
-        self.transient(parent)
-        self.grab_set()
-
-        # Apply dark mode if parent is in dark mode
-        if parent.dark_mode:
-            self.configure(bg=parent.dark_theme["bg"])
+        super().__init__(parent, "HEMTT Dev Configuration")
 
         # Dev options
         options_frame = ttk.LabelFrame(self, text="Dev Options", padding=10)
@@ -992,50 +1010,12 @@ class DevDialog(tk.Toplevel):
         )
 
         # Global options
-        global_frame = ttk.LabelFrame(self, text="Global Options", padding=10)
-        global_frame.pack(fill=tk.X, padx=10, pady=5)
-
-        # Verbosity level
-        verbose_frame = ttk.Frame(global_frame)
-        verbose_frame.pack(fill=tk.X, pady=2)
-        verbose_label = ttk.Label(verbose_frame, text="Verbosity:")
-        verbose_label.pack(side=tk.LEFT)
-        parent._create_tooltip(
-            verbose_label, "None: Normal output\n-v: Debug output\n-vv: Trace output"
-        )
-
-        self.verbose_var = tk.StringVar(value="none")
-        ttk.Radiobutton(verbose_frame, text="None", variable=self.verbose_var, value="none").pack(
-            side=tk.LEFT, padx=5
-        )
-        ttk.Radiobutton(
-            verbose_frame, text="-v (Debug)", variable=self.verbose_var, value="v"
-        ).pack(side=tk.LEFT, padx=5)
-        ttk.Radiobutton(
-            verbose_frame, text="-vv (Trace)", variable=self.verbose_var, value="vv"
-        ).pack(side=tk.LEFT, padx=5)
-
-        threads_frame = ttk.Frame(global_frame)
-        threads_frame.pack(fill=tk.X, pady=2)
-        ttk.Label(threads_frame, text="Threads (-t):").pack(side=tk.LEFT)
-        self.threads_var = tk.StringVar()
-        ttk.Spinbox(threads_frame, from_=1, to=32, textvariable=self.threads_var, width=5).pack(
-            side=tk.LEFT, padx=5
-        )
+        self._create_global_options_frame()
 
         # Buttons
-        btn_frame = ttk.Frame(self, padding=10)
-        btn_frame.pack(fill=tk.X)
-        ttk.Button(btn_frame, text="Run", command=self._on_run).pack(side=tk.RIGHT, padx=(5, 0))
-        ttk.Button(btn_frame, text="Cancel", command=self._on_cancel).pack(side=tk.RIGHT)
+        self._create_button_frame(self._on_run, self._on_cancel)
 
-        self._center_on_parent(parent)
-
-    def _center_on_parent(self, parent):
-        self.update_idletasks()
-        x = parent.winfo_x() + (parent.winfo_width() - self.winfo_width()) // 2
-        y = parent.winfo_y() + (parent.winfo_height() - self.winfo_height()) // 2
-        self.geometry(f"+{x}+{y}")
+        self._center_on_parent()
 
     def _on_run(self):
         args = ["dev"]
@@ -1061,39 +1041,18 @@ class DevDialog(tk.Toplevel):
                 if j:
                     args.extend(["--just", j])
 
-        verbose = self.verbose_var.get()
-        if verbose == "v":
-            args.append("-v")
-        elif verbose == "vv":
-            args.extend(["-vv"])
-
-        threads = self.threads_var.get().strip()
-        if threads:
-            args.extend(["-t", threads])
+        self._add_verbosity_to_args(args)
+        self._add_threads_to_args(args)
 
         self.result = args[1:]  # Remove "dev" since it's added by caller
         self.destroy()
 
-    def _on_cancel(self):
-        self.result = None
-        self.destroy()
 
-
-class BuildDialog(tk.Toplevel):
+class BuildDialog(BaseCommandDialog):
     """Dialog for configuring hemtt build options."""
 
     def __init__(self, parent):
-        super().__init__(parent)
-        self.title("HEMTT Build Configuration")
-        self.resizable(False, False)
-        self.result = None
-
-        self.transient(parent)
-        self.grab_set()
-
-        # Apply dark mode if parent is in dark mode
-        if parent.dark_mode:
-            self.configure(bg=parent.dark_theme["bg"])
+        super().__init__(parent, "HEMTT Build Configuration")
 
         # Build options
         options_frame = ttk.LabelFrame(self, text="Build Options", padding=10)
@@ -1120,50 +1079,12 @@ class BuildDialog(tk.Toplevel):
         )
 
         # Global options
-        global_frame = ttk.LabelFrame(self, text="Global Options", padding=10)
-        global_frame.pack(fill=tk.X, padx=10, pady=5)
-
-        # Verbosity level
-        verbose_frame = ttk.Frame(global_frame)
-        verbose_frame.pack(fill=tk.X, pady=2)
-        verbose_label = ttk.Label(verbose_frame, text="Verbosity:")
-        verbose_label.pack(side=tk.LEFT)
-        parent._create_tooltip(
-            verbose_label, "None: Normal output\n-v: Debug output\n-vv: Trace output"
-        )
-
-        self.verbose_var = tk.StringVar(value="none")
-        ttk.Radiobutton(verbose_frame, text="None", variable=self.verbose_var, value="none").pack(
-            side=tk.LEFT, padx=5
-        )
-        ttk.Radiobutton(
-            verbose_frame, text="-v (Debug)", variable=self.verbose_var, value="v"
-        ).pack(side=tk.LEFT, padx=5)
-        ttk.Radiobutton(
-            verbose_frame, text="-vv (Trace)", variable=self.verbose_var, value="vv"
-        ).pack(side=tk.LEFT, padx=5)
-
-        threads_frame = ttk.Frame(global_frame)
-        threads_frame.pack(fill=tk.X, pady=2)
-        ttk.Label(threads_frame, text="Threads (-t):").pack(side=tk.LEFT)
-        self.threads_var = tk.StringVar()
-        ttk.Spinbox(threads_frame, from_=1, to=32, textvariable=self.threads_var, width=5).pack(
-            side=tk.LEFT, padx=5
-        )
+        self._create_global_options_frame()
 
         # Buttons
-        btn_frame = ttk.Frame(self, padding=10)
-        btn_frame.pack(fill=tk.X)
-        ttk.Button(btn_frame, text="Run", command=self._on_run).pack(side=tk.RIGHT, padx=(5, 0))
-        ttk.Button(btn_frame, text="Cancel", command=self._on_cancel).pack(side=tk.RIGHT)
+        self._create_button_frame(self._on_run, self._on_cancel)
 
-        self._center_on_parent(parent)
-
-    def _center_on_parent(self, parent):
-        self.update_idletasks()
-        x = parent.winfo_x() + (parent.winfo_width() - self.winfo_width()) // 2
-        y = parent.winfo_y() + (parent.winfo_height() - self.winfo_height()) // 2
-        self.geometry(f"+{x}+{y}")
+        self._center_on_parent()
 
     def _on_run(self):
         args = ["build"]
@@ -1180,39 +1101,18 @@ class BuildDialog(tk.Toplevel):
                 if j:
                     args.extend(["--just", j])
 
-        verbose = self.verbose_var.get()
-        if verbose == "v":
-            args.append("-v")
-        elif verbose == "vv":
-            args.extend(["-vv"])
-
-        threads = self.threads_var.get().strip()
-        if threads:
-            args.extend(["-t", threads])
+        self._add_verbosity_to_args(args)
+        self._add_threads_to_args(args)
 
         self.result = args[1:]  # Remove "build" since it's added by caller
         self.destroy()
 
-    def _on_cancel(self):
-        self.result = None
-        self.destroy()
 
-
-class ReleaseDialog(tk.Toplevel):
+class ReleaseDialog(BaseCommandDialog):
     """Dialog for configuring hemtt release options."""
 
     def __init__(self, parent):
-        super().__init__(parent)
-        self.title("HEMTT Release Configuration")
-        self.resizable(False, False)
-        self.result = None
-
-        self.transient(parent)
-        self.grab_set()
-
-        # Apply dark mode if parent is in dark mode
-        if parent.dark_mode:
-            self.configure(bg=parent.dark_theme["bg"])
+        super().__init__(parent, "HEMTT Release Configuration")
 
         # Release options
         options_frame = ttk.LabelFrame(self, text="Release Options", padding=10)
@@ -1239,50 +1139,12 @@ class ReleaseDialog(tk.Toplevel):
         ).pack(anchor=tk.W, pady=2)
 
         # Global options
-        global_frame = ttk.LabelFrame(self, text="Global Options", padding=10)
-        global_frame.pack(fill=tk.X, padx=10, pady=5)
-
-        # Verbosity level
-        verbose_frame = ttk.Frame(global_frame)
-        verbose_frame.pack(fill=tk.X, pady=2)
-        verbose_label = ttk.Label(verbose_frame, text="Verbosity:")
-        verbose_label.pack(side=tk.LEFT)
-        parent._create_tooltip(
-            verbose_label, "None: Normal output\n-v: Debug output\n-vv: Trace output"
-        )
-
-        self.verbose_var = tk.StringVar(value="none")
-        ttk.Radiobutton(verbose_frame, text="None", variable=self.verbose_var, value="none").pack(
-            side=tk.LEFT, padx=5
-        )
-        ttk.Radiobutton(
-            verbose_frame, text="-v (Debug)", variable=self.verbose_var, value="v"
-        ).pack(side=tk.LEFT, padx=5)
-        ttk.Radiobutton(
-            verbose_frame, text="-vv (Trace)", variable=self.verbose_var, value="vv"
-        ).pack(side=tk.LEFT, padx=5)
-
-        threads_frame = ttk.Frame(global_frame)
-        threads_frame.pack(fill=tk.X, pady=2)
-        ttk.Label(threads_frame, text="Threads (-t):").pack(side=tk.LEFT)
-        self.threads_var = tk.StringVar()
-        ttk.Spinbox(threads_frame, from_=1, to=32, textvariable=self.threads_var, width=5).pack(
-            side=tk.LEFT, padx=5
-        )
+        self._create_global_options_frame()
 
         # Buttons
-        btn_frame = ttk.Frame(self, padding=10)
-        btn_frame.pack(fill=tk.X)
-        ttk.Button(btn_frame, text="Run", command=self._on_run).pack(side=tk.RIGHT, padx=(5, 0))
-        ttk.Button(btn_frame, text="Cancel", command=self._on_cancel).pack(side=tk.RIGHT)
+        self._create_button_frame(self._on_run, self._on_cancel)
 
-        self._center_on_parent(parent)
-
-    def _center_on_parent(self, parent):
-        self.update_idletasks()
-        x = parent.winfo_x() + (parent.winfo_width() - self.winfo_width()) // 2
-        y = parent.winfo_y() + (parent.winfo_height() - self.winfo_height()) // 2
-        self.geometry(f"+{x}+{y}")
+        self._center_on_parent()
 
     def _on_run(self):
         args = ["release"]
@@ -1296,21 +1158,10 @@ class ReleaseDialog(tk.Toplevel):
         if self.no_archive_var.get():
             args.append("--no-archive")
 
-        verbose = self.verbose_var.get()
-        if verbose == "v":
-            args.append("-v")
-        elif verbose == "vv":
-            args.extend(["-vv"])
-
-        threads = self.threads_var.get().strip()
-        if threads:
-            args.extend(["-t", threads])
+        self._add_verbosity_to_args(args)
+        self._add_threads_to_args(args)
 
         self.result = args[1:]  # Remove "release" since it's added by caller
-        self.destroy()
-
-    def _on_cancel(self):
-        self.result = None
         self.destroy()
 
 
