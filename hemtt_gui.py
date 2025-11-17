@@ -816,10 +816,25 @@ class CheckDialog(tk.Toplevel):
         global_frame = ttk.LabelFrame(self, text="Global Options", padding=10)
         global_frame.pack(fill=tk.X, padx=10, pady=5)
 
-        self.verbose_var = tk.BooleanVar(value=False)
-        ttk.Checkbutton(global_frame, text="Verbose (-v)", variable=self.verbose_var).pack(
-            anchor=tk.W, pady=2
+        # Verbosity level
+        verbose_frame = ttk.Frame(global_frame)
+        verbose_frame.pack(fill=tk.X, pady=2)
+        verbose_label = ttk.Label(verbose_frame, text="Verbosity:")
+        verbose_label.pack(side=tk.LEFT)
+        parent._create_tooltip(
+            verbose_label, "None: Normal output\n-v: Debug output\n-vv: Trace output"
         )
+
+        self.verbose_var = tk.StringVar(value="none")
+        ttk.Radiobutton(verbose_frame, text="None", variable=self.verbose_var, value="none").pack(
+            side=tk.LEFT, padx=5
+        )
+        ttk.Radiobutton(
+            verbose_frame, text="-v (Debug)", variable=self.verbose_var, value="v"
+        ).pack(side=tk.LEFT, padx=5)
+        ttk.Radiobutton(
+            verbose_frame, text="-vv (Trace)", variable=self.verbose_var, value="vv"
+        ).pack(side=tk.LEFT, padx=5)
 
         threads_frame = ttk.Frame(global_frame)
         threads_frame.pack(fill=tk.X, pady=2)
@@ -856,8 +871,11 @@ class CheckDialog(tk.Toplevel):
                 if lint:
                     args.extend(["-L", lint])
 
-        if self.verbose_var.get():
+        verbose = self.verbose_var.get()
+        if verbose == "v":
             args.append("-v")
+        elif verbose == "vv":
+            args.extend(["-vv"])
 
         threads = self.threads_var.get().strip()
         if threads:
@@ -928,10 +946,25 @@ class DevDialog(tk.Toplevel):
         global_frame = ttk.LabelFrame(self, text="Global Options", padding=10)
         global_frame.pack(fill=tk.X, padx=10, pady=5)
 
-        self.verbose_var = tk.BooleanVar(value=False)
-        ttk.Checkbutton(global_frame, text="Verbose (-v)", variable=self.verbose_var).pack(
-            anchor=tk.W, pady=2
+        # Verbosity level
+        verbose_frame = ttk.Frame(global_frame)
+        verbose_frame.pack(fill=tk.X, pady=2)
+        verbose_label = ttk.Label(verbose_frame, text="Verbosity:")
+        verbose_label.pack(side=tk.LEFT)
+        parent._create_tooltip(
+            verbose_label, "None: Normal output\n-v: Debug output\n-vv: Trace output"
         )
+
+        self.verbose_var = tk.StringVar(value="none")
+        ttk.Radiobutton(verbose_frame, text="None", variable=self.verbose_var, value="none").pack(
+            side=tk.LEFT, padx=5
+        )
+        ttk.Radiobutton(
+            verbose_frame, text="-v (Debug)", variable=self.verbose_var, value="v"
+        ).pack(side=tk.LEFT, padx=5)
+        ttk.Radiobutton(
+            verbose_frame, text="-vv (Trace)", variable=self.verbose_var, value="vv"
+        ).pack(side=tk.LEFT, padx=5)
 
         threads_frame = ttk.Frame(global_frame)
         threads_frame.pack(fill=tk.X, pady=2)
@@ -979,8 +1012,11 @@ class DevDialog(tk.Toplevel):
                 if j:
                     args.extend(["--just", j])
 
-        if self.verbose_var.get():
+        verbose = self.verbose_var.get()
+        if verbose == "v":
             args.append("-v")
+        elif verbose == "vv":
+            args.extend(["-vv"])
 
         threads = self.threads_var.get().strip()
         if threads:
@@ -1034,10 +1070,25 @@ class BuildDialog(tk.Toplevel):
         global_frame = ttk.LabelFrame(self, text="Global Options", padding=10)
         global_frame.pack(fill=tk.X, padx=10, pady=5)
 
-        self.verbose_var = tk.BooleanVar(value=False)
-        ttk.Checkbutton(global_frame, text="Verbose (-v)", variable=self.verbose_var).pack(
-            anchor=tk.W, pady=2
+        # Verbosity level
+        verbose_frame = ttk.Frame(global_frame)
+        verbose_frame.pack(fill=tk.X, pady=2)
+        verbose_label = ttk.Label(verbose_frame, text="Verbosity:")
+        verbose_label.pack(side=tk.LEFT)
+        parent._create_tooltip(
+            verbose_label, "None: Normal output\n-v: Debug output\n-vv: Trace output"
         )
+
+        self.verbose_var = tk.StringVar(value="none")
+        ttk.Radiobutton(verbose_frame, text="None", variable=self.verbose_var, value="none").pack(
+            side=tk.LEFT, padx=5
+        )
+        ttk.Radiobutton(
+            verbose_frame, text="-v (Debug)", variable=self.verbose_var, value="v"
+        ).pack(side=tk.LEFT, padx=5)
+        ttk.Radiobutton(
+            verbose_frame, text="-vv (Trace)", variable=self.verbose_var, value="vv"
+        ).pack(side=tk.LEFT, padx=5)
 
         threads_frame = ttk.Frame(global_frame)
         threads_frame.pack(fill=tk.X, pady=2)
@@ -1076,8 +1127,11 @@ class BuildDialog(tk.Toplevel):
                 if j:
                     args.extend(["--just", j])
 
-        if self.verbose_var.get():
+        verbose = self.verbose_var.get()
+        if verbose == "v":
             args.append("-v")
+        elif verbose == "vv":
+            args.extend(["-vv"])
 
         threads = self.threads_var.get().strip()
         if threads:
@@ -1131,10 +1185,25 @@ class ReleaseDialog(tk.Toplevel):
         global_frame = ttk.LabelFrame(self, text="Global Options", padding=10)
         global_frame.pack(fill=tk.X, padx=10, pady=5)
 
-        self.verbose_var = tk.BooleanVar(value=False)
-        ttk.Checkbutton(global_frame, text="Verbose (-v)", variable=self.verbose_var).pack(
-            anchor=tk.W, pady=2
+        # Verbosity level
+        verbose_frame = ttk.Frame(global_frame)
+        verbose_frame.pack(fill=tk.X, pady=2)
+        verbose_label = ttk.Label(verbose_frame, text="Verbosity:")
+        verbose_label.pack(side=tk.LEFT)
+        parent._create_tooltip(
+            verbose_label, "None: Normal output\n-v: Debug output\n-vv: Trace output"
         )
+
+        self.verbose_var = tk.StringVar(value="none")
+        ttk.Radiobutton(verbose_frame, text="None", variable=self.verbose_var, value="none").pack(
+            side=tk.LEFT, padx=5
+        )
+        ttk.Radiobutton(
+            verbose_frame, text="-v (Debug)", variable=self.verbose_var, value="v"
+        ).pack(side=tk.LEFT, padx=5)
+        ttk.Radiobutton(
+            verbose_frame, text="-vv (Trace)", variable=self.verbose_var, value="vv"
+        ).pack(side=tk.LEFT, padx=5)
 
         threads_frame = ttk.Frame(global_frame)
         threads_frame.pack(fill=tk.X, pady=2)
@@ -1170,8 +1239,11 @@ class ReleaseDialog(tk.Toplevel):
         if self.no_archive_var.get():
             args.append("--no-archive")
 
-        if self.verbose_var.get():
+        verbose = self.verbose_var.get()
+        if verbose == "v":
             args.append("-v")
+        elif verbose == "vv":
+            args.extend(["-vv"])
 
         threads = self.threads_var.get().strip()
         if threads:
