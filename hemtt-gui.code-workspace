@@ -12,13 +12,5 @@
         "files.trimFinalNewlines": true,
         "files.trimTrailingWhitespace": true,
         "files.insertFinalNewline": true,
-
-        "files.associations": {
-            "*.cpp": "arma-config",
-            "*.hpp": "arma-config",
-            "*.inc": "arma-config",
-            "*.cfg": "arma-config",
-            "*.rvmat": "arma-config"
-        }
     }
 }
