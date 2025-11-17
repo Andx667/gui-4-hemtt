@@ -43,10 +43,11 @@ class HemttGUI(tk.Tk):
 
     def _create_tooltip(self, widget, text):
         """Create a tooltip for a widget."""
+
         def on_enter(event):
             tooltip = tk.Toplevel()
             tooltip.wm_overrideredirect(True)
-            tooltip.wm_geometry(f"+{event.x_root+10}+{event.y_root+10}")
+            tooltip.wm_geometry(f"+{event.x_root + 10}+{event.y_root + 10}")
             label = tk.Label(
                 tooltip,
                 text=text,
@@ -55,13 +56,13 @@ class HemttGUI(tk.Tk):
                 borderwidth=1,
                 font=("TkDefaultFont", 9),
                 padx=5,
-                pady=3
+                pady=3,
             )
             label.pack()
             widget._tooltip = tooltip
 
         def on_leave(event):
-            if hasattr(widget, '_tooltip'):
+            if hasattr(widget, "_tooltip"):
                 widget._tooltip.destroy()
                 del widget._tooltip
 
@@ -78,14 +79,19 @@ class HemttGUI(tk.Tk):
             text="Install HEMTT (winget) ⓘ",
             command=self._install_hemtt,
         )
-        self._create_tooltip(self.btn_install_hemtt, "Install HEMTT via Windows Package Manager\nRequires winget to be installed")
+        self._create_tooltip(
+            self.btn_install_hemtt,
+            "Install HEMTT via Windows Package Manager\nRequires winget to be installed",
+        )
 
         self.btn_update_hemtt = ttk.Button(
             winget_frame,
             text="Update HEMTT (winget) ⓘ",
             command=self._update_hemtt,
         )
-        self._create_tooltip(self.btn_update_hemtt, "Update HEMTT to latest version\nUses Windows Package Manager")
+        self._create_tooltip(
+            self.btn_update_hemtt, "Update HEMTT to latest version\nUses Windows Package Manager"
+        )
 
         self.btn_install_hemtt.pack(side=tk.LEFT, padx=(0, 8))
         self.btn_update_hemtt.pack(side=tk.LEFT)
@@ -127,19 +133,29 @@ class HemttGUI(tk.Tk):
         btns.pack(fill=tk.X, pady=(4, 0))
 
         self.btn_check = ttk.Button(btns, text="hemtt check ⓘ", command=self._run_check)
-        self._create_tooltip(self.btn_check, "Check project for errors\nQuick validation without building files")
+        self._create_tooltip(
+            self.btn_check, "Check project for errors\nQuick validation without building files"
+        )
 
         self.btn_dev = ttk.Button(btns, text="hemtt dev ⓘ", command=self._run_dev)
-        self._create_tooltip(self.btn_dev, "Build for development\nCreates symlinks for file-patching")
+        self._create_tooltip(
+            self.btn_dev, "Build for development\nCreates symlinks for file-patching"
+        )
 
         self.btn_launch = ttk.Button(btns, text="hemtt launch ⓘ", command=self._run_launch)
-        self._create_tooltip(self.btn_launch, "Build and launch Arma 3\nAutomatically loads mods and dependencies")
+        self._create_tooltip(
+            self.btn_launch, "Build and launch Arma 3\nAutomatically loads mods and dependencies"
+        )
 
         self.btn_build = ttk.Button(btns, text="hemtt build ⓘ", command=self._run_build)
-        self._create_tooltip(self.btn_build, "Build for local testing\nBinarizes files for final testing")
+        self._create_tooltip(
+            self.btn_build, "Build for local testing\nBinarizes files for final testing"
+        )
 
         self.btn_release = ttk.Button(btns, text="hemtt release ⓘ", command=self._run_release)
-        self._create_tooltip(self.btn_release, "Build for release\nCreates signed PBOs and archives")
+        self._create_tooltip(
+            self.btn_release, "Build for release\nCreates signed PBOs and archives"
+        )
 
         self.btn_cancel = ttk.Button(btns, text="Cancel", command=self._cancel_run)
         self.btn_cancel.state(["disabled"])  # disabled by default
@@ -160,16 +176,28 @@ class HemttGUI(tk.Tk):
         btns2.pack(fill=tk.X)
 
         self.btn_ln_sort = ttk.Button(btns2, text="hemtt ln sort ⓘ", command=self._run_ln_sort)
-        self._create_tooltip(self.btn_ln_sort, "Sort stringtable entries\nOrganizes localization keys alphabetically")
+        self._create_tooltip(
+            self.btn_ln_sort, "Sort stringtable entries\nOrganizes localization keys alphabetically"
+        )
 
-        self.btn_ln_coverage = ttk.Button(btns2, text="hemtt ln coverage ⓘ", command=self._run_ln_coverage)
-        self._create_tooltip(self.btn_ln_coverage, "Check stringtable coverage\nFinds missing translations")
+        self.btn_ln_coverage = ttk.Button(
+            btns2, text="hemtt ln coverage ⓘ", command=self._run_ln_coverage
+        )
+        self._create_tooltip(
+            self.btn_ln_coverage, "Check stringtable coverage\nFinds missing translations"
+        )
 
-        self.btn_utils_fnl = ttk.Button(btns2, text="hemtt utils fnl ⓘ", command=self._run_utils_fnl)
-        self._create_tooltip(self.btn_utils_fnl, "Generate function list\nCreates documentation of all functions")
+        self.btn_utils_fnl = ttk.Button(
+            btns2, text="hemtt utils fnl ⓘ", command=self._run_utils_fnl
+        )
+        self._create_tooltip(
+            self.btn_utils_fnl, "Generate function list\nCreates documentation of all functions"
+        )
 
         self.btn_book = ttk.Button(btns2, text="hemtt book ⓘ", command=self._open_book)
-        self._create_tooltip(self.btn_book, "Open HEMTT documentation\nOpens hemtt.dev in your browser")
+        self._create_tooltip(
+            self.btn_book, "Open HEMTT documentation\nOpens hemtt.dev in your browser"
+        )
 
         self.btn_ln_sort.pack(side=tk.LEFT, padx=(0, 8))
         self.btn_ln_coverage.pack(side=tk.LEFT, padx=(0, 8))
@@ -769,9 +797,9 @@ class CheckDialog(tk.Toplevel):
         options_frame.pack(fill=tk.X, padx=10, pady=5)
 
         self.pedantic_var = tk.BooleanVar(value=False)
-        ttk.Checkbutton(
-            options_frame, text="Pedantic (-p)", variable=self.pedantic_var
-        ).pack(anchor=tk.W, pady=2)
+        ttk.Checkbutton(options_frame, text="Pedantic (-p)", variable=self.pedantic_var).pack(
+            anchor=tk.W, pady=2
+        )
 
         # Lints
         lints_frame = ttk.Frame(options_frame)
@@ -780,22 +808,26 @@ class CheckDialog(tk.Toplevel):
         self.lints_var = tk.StringVar()
         lints_entry = ttk.Entry(lints_frame, textvariable=self.lints_var, width=30)
         lints_entry.pack(side=tk.LEFT, padx=5)
-        ttk.Label(lints_frame, text="(comma-separated)", font=("TkDefaultFont", 8)).pack(side=tk.LEFT)
+        ttk.Label(lints_frame, text="(comma-separated)", font=("TkDefaultFont", 8)).pack(
+            side=tk.LEFT
+        )
 
         # Global options
         global_frame = ttk.LabelFrame(self, text="Global Options", padding=10)
         global_frame.pack(fill=tk.X, padx=10, pady=5)
 
         self.verbose_var = tk.BooleanVar(value=False)
-        ttk.Checkbutton(
-            global_frame, text="Verbose (-v)", variable=self.verbose_var
-        ).pack(anchor=tk.W, pady=2)
+        ttk.Checkbutton(global_frame, text="Verbose (-v)", variable=self.verbose_var).pack(
+            anchor=tk.W, pady=2
+        )
 
         threads_frame = ttk.Frame(global_frame)
         threads_frame.pack(fill=tk.X, pady=2)
         ttk.Label(threads_frame, text="Threads (-t):").pack(side=tk.LEFT)
         self.threads_var = tk.StringVar()
-        ttk.Spinbox(threads_frame, from_=1, to=32, textvariable=self.threads_var, width=5).pack(side=tk.LEFT, padx=5)
+        ttk.Spinbox(threads_frame, from_=1, to=32, textvariable=self.threads_var, width=5).pack(
+            side=tk.LEFT, padx=5
+        )
 
         # Buttons
         btn_frame = ttk.Frame(self, padding=10)
@@ -856,14 +888,14 @@ class DevDialog(tk.Toplevel):
         options_frame.pack(fill=tk.X, padx=10, pady=5)
 
         self.binarize_var = tk.BooleanVar(value=False)
-        ttk.Checkbutton(
-            options_frame, text="Binarize (-b)", variable=self.binarize_var
-        ).pack(anchor=tk.W, pady=2)
+        ttk.Checkbutton(options_frame, text="Binarize (-b)", variable=self.binarize_var).pack(
+            anchor=tk.W, pady=2
+        )
 
         self.no_rap_var = tk.BooleanVar(value=False)
-        ttk.Checkbutton(
-            options_frame, text="No RAP (--no-rap)", variable=self.no_rap_var
-        ).pack(anchor=tk.W, pady=2)
+        ttk.Checkbutton(options_frame, text="No RAP (--no-rap)", variable=self.no_rap_var).pack(
+            anchor=tk.W, pady=2
+        )
 
         self.all_optionals_var = tk.BooleanVar(value=False)
         ttk.Checkbutton(
@@ -875,8 +907,12 @@ class DevDialog(tk.Toplevel):
         optional_frame.pack(fill=tk.X, pady=5)
         ttk.Label(optional_frame, text="Optional addons (-o):").pack(side=tk.LEFT)
         self.optional_var = tk.StringVar()
-        ttk.Entry(optional_frame, textvariable=self.optional_var, width=30).pack(side=tk.LEFT, padx=5)
-        ttk.Label(optional_frame, text="(comma-separated)", font=("TkDefaultFont", 8)).pack(side=tk.LEFT)
+        ttk.Entry(optional_frame, textvariable=self.optional_var, width=30).pack(
+            side=tk.LEFT, padx=5
+        )
+        ttk.Label(optional_frame, text="(comma-separated)", font=("TkDefaultFont", 8)).pack(
+            side=tk.LEFT
+        )
 
         # Just
         just_frame = ttk.Frame(options_frame)
@@ -884,22 +920,26 @@ class DevDialog(tk.Toplevel):
         ttk.Label(just_frame, text="Just (--just):").pack(side=tk.LEFT)
         self.just_var = tk.StringVar()
         ttk.Entry(just_frame, textvariable=self.just_var, width=30).pack(side=tk.LEFT, padx=5)
-        ttk.Label(just_frame, text="(comma-separated)", font=("TkDefaultFont", 8)).pack(side=tk.LEFT)
+        ttk.Label(just_frame, text="(comma-separated)", font=("TkDefaultFont", 8)).pack(
+            side=tk.LEFT
+        )
 
         # Global options
         global_frame = ttk.LabelFrame(self, text="Global Options", padding=10)
         global_frame.pack(fill=tk.X, padx=10, pady=5)
 
         self.verbose_var = tk.BooleanVar(value=False)
-        ttk.Checkbutton(
-            global_frame, text="Verbose (-v)", variable=self.verbose_var
-        ).pack(anchor=tk.W, pady=2)
+        ttk.Checkbutton(global_frame, text="Verbose (-v)", variable=self.verbose_var).pack(
+            anchor=tk.W, pady=2
+        )
 
         threads_frame = ttk.Frame(global_frame)
         threads_frame.pack(fill=tk.X, pady=2)
         ttk.Label(threads_frame, text="Threads (-t):").pack(side=tk.LEFT)
         self.threads_var = tk.StringVar()
-        ttk.Spinbox(threads_frame, from_=1, to=32, textvariable=self.threads_var, width=5).pack(side=tk.LEFT, padx=5)
+        ttk.Spinbox(threads_frame, from_=1, to=32, textvariable=self.threads_var, width=5).pack(
+            side=tk.LEFT, padx=5
+        )
 
         # Buttons
         btn_frame = ttk.Frame(self, padding=10)
@@ -976,9 +1016,9 @@ class BuildDialog(tk.Toplevel):
         ).pack(anchor=tk.W, pady=2)
 
         self.no_rap_var = tk.BooleanVar(value=False)
-        ttk.Checkbutton(
-            options_frame, text="No RAP (--no-rap)", variable=self.no_rap_var
-        ).pack(anchor=tk.W, pady=2)
+        ttk.Checkbutton(options_frame, text="No RAP (--no-rap)", variable=self.no_rap_var).pack(
+            anchor=tk.W, pady=2
+        )
 
         # Just
         just_frame = ttk.Frame(options_frame)
@@ -986,22 +1026,26 @@ class BuildDialog(tk.Toplevel):
         ttk.Label(just_frame, text="Just (--just):").pack(side=tk.LEFT)
         self.just_var = tk.StringVar()
         ttk.Entry(just_frame, textvariable=self.just_var, width=30).pack(side=tk.LEFT, padx=5)
-        ttk.Label(just_frame, text="(comma-separated)", font=("TkDefaultFont", 8)).pack(side=tk.LEFT)
+        ttk.Label(just_frame, text="(comma-separated)", font=("TkDefaultFont", 8)).pack(
+            side=tk.LEFT
+        )
 
         # Global options
         global_frame = ttk.LabelFrame(self, text="Global Options", padding=10)
         global_frame.pack(fill=tk.X, padx=10, pady=5)
 
         self.verbose_var = tk.BooleanVar(value=False)
-        ttk.Checkbutton(
-            global_frame, text="Verbose (-v)", variable=self.verbose_var
-        ).pack(anchor=tk.W, pady=2)
+        ttk.Checkbutton(global_frame, text="Verbose (-v)", variable=self.verbose_var).pack(
+            anchor=tk.W, pady=2
+        )
 
         threads_frame = ttk.Frame(global_frame)
         threads_frame.pack(fill=tk.X, pady=2)
         ttk.Label(threads_frame, text="Threads (-t):").pack(side=tk.LEFT)
         self.threads_var = tk.StringVar()
-        ttk.Spinbox(threads_frame, from_=1, to=32, textvariable=self.threads_var, width=5).pack(side=tk.LEFT, padx=5)
+        ttk.Spinbox(threads_frame, from_=1, to=32, textvariable=self.threads_var, width=5).pack(
+            side=tk.LEFT, padx=5
+        )
 
         # Buttons
         btn_frame = ttk.Frame(self, padding=10)
@@ -1069,14 +1113,14 @@ class ReleaseDialog(tk.Toplevel):
         ).pack(anchor=tk.W, pady=2)
 
         self.no_rap_var = tk.BooleanVar(value=False)
-        ttk.Checkbutton(
-            options_frame, text="No RAP (--no-rap)", variable=self.no_rap_var
-        ).pack(anchor=tk.W, pady=2)
+        ttk.Checkbutton(options_frame, text="No RAP (--no-rap)", variable=self.no_rap_var).pack(
+            anchor=tk.W, pady=2
+        )
 
         self.no_sign_var = tk.BooleanVar(value=False)
-        ttk.Checkbutton(
-            options_frame, text="No Sign (--no-sign)", variable=self.no_sign_var
-        ).pack(anchor=tk.W, pady=2)
+        ttk.Checkbutton(options_frame, text="No Sign (--no-sign)", variable=self.no_sign_var).pack(
+            anchor=tk.W, pady=2
+        )
 
         self.no_archive_var = tk.BooleanVar(value=False)
         ttk.Checkbutton(
@@ -1088,15 +1132,17 @@ class ReleaseDialog(tk.Toplevel):
         global_frame.pack(fill=tk.X, padx=10, pady=5)
 
         self.verbose_var = tk.BooleanVar(value=False)
-        ttk.Checkbutton(
-            global_frame, text="Verbose (-v)", variable=self.verbose_var
-        ).pack(anchor=tk.W, pady=2)
+        ttk.Checkbutton(global_frame, text="Verbose (-v)", variable=self.verbose_var).pack(
+            anchor=tk.W, pady=2
+        )
 
         threads_frame = ttk.Frame(global_frame)
         threads_frame.pack(fill=tk.X, pady=2)
         ttk.Label(threads_frame, text="Threads (-t):").pack(side=tk.LEFT)
         self.threads_var = tk.StringVar()
-        ttk.Spinbox(threads_frame, from_=1, to=32, textvariable=self.threads_var, width=5).pack(side=tk.LEFT, padx=5)
+        ttk.Spinbox(threads_frame, from_=1, to=32, textvariable=self.threads_var, width=5).pack(
+            side=tk.LEFT, padx=5
+        )
 
         # Buttons
         btn_frame = ttk.Frame(self, padding=10)
