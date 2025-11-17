@@ -10,22 +10,28 @@ Below is an example of the GUI in use (dark mode with build options visible).
 
 ## Features
 
-- One-click core commands: `hemtt build`, `hemtt dev`, `hemtt check`, `hemtt release`, `hemtt launch`.
-- Winget convenience: `Install HEMTT (winget)` and `Update HEMTT (winget)` buttons (Windows) to install or upgrade the `BrettMayson.HEMTT` package.
-- Extended commands: `hemtt ln sort`, `hemtt ln coverage`, `hemtt license`, `hemtt script <name>`, `hemtt utils fnl`, `hemtt new <project>`.
-- Launch dialog with profiles, instances, executable override, optionals, quick mode, passthrough arguments (`--`), binarize options.
-- Build/Dev option toggles: `--binarize`, `--no-rap`, `--all-optionals` (`-O`), `--optional <addon>` (comma list), `--just <addon>`, threads (`-t`).
-- Dark / Light mode toggle with styled controls.
-- Drag & Drop a folder anywhere in the window to set the project directory (optional dependency).
-- Persistent paths: HEMTT executable, project directory, Arma 3 executable stored in `config.json`.
-- Export log to timestamped text file.
-- Color-coded console output with basic severity detection (error / warning / info).
-- Elapsed time and status bar with live update.
-- New project dialog (wrapper for `hemtt new`).
-- License dialog (choose common licenses or interactive mode).
-- Script dialog for quick execution.
-- Cancellation of running process.
-- Custom argument entry (after `hemtt`).
+- **One-click core commands**: `hemtt build`, `hemtt dev`, `hemtt check`, `hemtt release`, `hemtt launch`.
+- **Command-specific dialogs**: Each main command (check, dev, build, release, launch) opens a dedicated dialog with command-specific options and global settings.
+- **Winget convenience**: `Install HEMTT (winget)` and `Update HEMTT (winget)` buttons (Windows) to install or upgrade the `BrettMayson.HEMTT` package.
+- **Helper commands**: `hemtt ln sort`, `hemtt ln coverage`, `hemtt utils fnl`, `hemtt utils bom`, `hemtt book`.
+- **Additional commands**: `hemtt license`, `hemtt script <name>`, `hemtt new <project>`.
+- **Command options**:
+  - **Check**: Pedantic mode (`-p`), custom lints (`-L`), verbosity levels (None/-v/-vv), threads (`-t`)
+  - **Dev**: Binarize (`-b`), no-rap, all-optionals (`-O`), specific optionals (`-o`), just addon (`--just`), verbosity, threads
+  - **Build**: No-bin, no-rap, just addon (`--just`), verbosity, threads
+  - **Release**: No-bin, no-rap, no-sign, no-archive, verbosity, threads
+  - **Launch**: Quick mode (`-Q`), no filepatching (`-F`), binarize, optionals, executable override, instances, profiles
+- **Verbosity control**: Three-level verbosity (Normal, Debug `-v`, Trace `-vv`) via radio buttons in command dialogs.
+- **Tooltips**: All buttons feature ⓘ icons with informative hover tooltips explaining each command.
+- **Dark / Light mode toggle**: Fully styled controls with consistent theming across main window and dialogs.
+- **Open HEMTT Log**: Quick access to `.hemttout/latest.log` in your default text editor.
+- **Organized UI**: Labeled sections (Main Commands, Helper Commands, Utilities) with visual dividers.
+- **Drag & Drop**: Drop a folder anywhere in the window to set the project directory (optional dependency).
+- **Persistent configuration**: HEMTT executable, project directory, Arma 3 executable, and dark mode preference stored in `config.json`.
+- **Color-coded console output**: Basic severity detection (error / warning / info) with appropriate highlighting.
+- **Live status updates**: Elapsed time and status bar with real-time updates during command execution.
+- **Process cancellation**: Cancel running commands at any time.
+- **Custom arguments**: Enter additional arguments exactly as you would after `hemtt` on the CLI.
 
 ## Requirements
 
@@ -130,10 +136,11 @@ Trigger it by publishing a new Release in GitHub (or run manually via the Action
 | `hemtt` not found | Ensure it's installed or browse to executable. |
 | Drag & Drop not working | Install `tkinterdnd2` and restart app. |
 | GUI freezes | Shouldn't happen; output runs in thread. Report issue. |
-| No output until end | Some commands may buffer; run with extra verbosity (`-v`, `-vv`). |
+| No output until end | Some commands may buffer; run with extra verbosity (select `-v` or `-vv` in command dialog). |
+| Dialog boxes have bright borders in dark mode | Fixed in latest version. Update to current version. |
+| Can't find HEMTT log file | Run a HEMTT command first to generate `.hemttout/latest.log`. |
 | License dialog shows none | Run without selecting a license for interactive mode. |
 
 ## License
 
 [MIT LICENSE](LICENSE)
-
