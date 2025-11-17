@@ -41,6 +41,33 @@ class HemttGUI(tk.Tk):
         self._load_config_into_ui()
         self._poll_output_queue()
 
+    def _create_tooltip(self, widget, text):
+        """Create a tooltip for a widget."""
+        def on_enter(event):
+            tooltip = tk.Toplevel()
+            tooltip.wm_overrideredirect(True)
+            tooltip.wm_geometry(f"+{event.x_root+10}+{event.y_root+10}")
+            label = tk.Label(
+                tooltip,
+                text=text,
+                background="#ffffe0",
+                relief=tk.SOLID,
+                borderwidth=1,
+                font=("TkDefaultFont", 9),
+                padx=5,
+                pady=3
+            )
+            label.pack()
+            widget._tooltip = tooltip
+
+        def on_leave(event):
+            if hasattr(widget, '_tooltip'):
+                widget._tooltip.destroy()
+                del widget._tooltip
+
+        widget.bind("<Enter>", on_enter)
+        widget.bind("<Leave>", on_leave)
+
     def _build_ui(self):
         """Create and lay out all UI widgets."""
         # Winget install/update frame (top-most)
@@ -48,14 +75,18 @@ class HemttGUI(tk.Tk):
         winget_frame.pack(fill=tk.X)
         self.btn_install_hemtt = ttk.Button(
             winget_frame,
-            text="Install HEMTT (winget)",
+            text="Install HEMTT (winget) ⓘ",
             command=self._install_hemtt,
         )
+        self._create_tooltip(self.btn_install_hemtt, "Install HEMTT via Windows Package Manager\nRequires winget to be installed")
+
         self.btn_update_hemtt = ttk.Button(
             winget_frame,
-            text="Update HEMTT (winget)",
+            text="Update HEMTT (winget) ⓘ",
             command=self._update_hemtt,
         )
+        self._create_tooltip(self.btn_update_hemtt, "Update HEMTT to latest version\nUses Windows Package Manager")
+
         self.btn_install_hemtt.pack(side=tk.LEFT, padx=(0, 8))
         self.btn_update_hemtt.pack(side=tk.LEFT)
         # Top frame for paths
@@ -95,11 +126,21 @@ class HemttGUI(tk.Tk):
         btns = ttk.Frame(self, padding=(8, 0))
         btns.pack(fill=tk.X, pady=(4, 0))
 
-        self.btn_check = ttk.Button(btns, text="hemtt check", command=self._run_check)
-        self.btn_dev = ttk.Button(btns, text="hemtt dev", command=self._run_dev)
-        self.btn_launch = ttk.Button(btns, text="hemtt launch", command=self._run_launch)
-        self.btn_build = ttk.Button(btns, text="hemtt build", command=self._run_build)
-        self.btn_release = ttk.Button(btns, text="hemtt release", command=self._run_release)
+        self.btn_check = ttk.Button(btns, text="hemtt check ⓘ", command=self._run_check)
+        self._create_tooltip(self.btn_check, "Check project for errors\nQuick validation without building files")
+
+        self.btn_dev = ttk.Button(btns, text="hemtt dev ⓘ", command=self._run_dev)
+        self._create_tooltip(self.btn_dev, "Build for development\nCreates symlinks for file-patching")
+
+        self.btn_launch = ttk.Button(btns, text="hemtt launch ⓘ", command=self._run_launch)
+        self._create_tooltip(self.btn_launch, "Build and launch Arma 3\nAutomatically loads mods and dependencies")
+
+        self.btn_build = ttk.Button(btns, text="hemtt build ⓘ", command=self._run_build)
+        self._create_tooltip(self.btn_build, "Build for local testing\nBinarizes files for final testing")
+
+        self.btn_release = ttk.Button(btns, text="hemtt release ⓘ", command=self._run_release)
+        self._create_tooltip(self.btn_release, "Build for release\nCreates signed PBOs and archives")
+
         self.btn_cancel = ttk.Button(btns, text="Cancel", command=self._cancel_run)
         self.btn_cancel.state(["disabled"])  # disabled by default
 
@@ -118,114 +159,22 @@ class HemttGUI(tk.Tk):
         btns2 = ttk.Frame(self, padding=(8, 4))
         btns2.pack(fill=tk.X)
 
-        self.btn_ln_sort = ttk.Button(btns2, text="hemtt ln sort", command=self._run_ln_sort)
-        self.btn_ln_coverage = ttk.Button(
-            btns2, text="hemtt ln coverage", command=self._run_ln_coverage
-        )
-        self.btn_utils_fnl = ttk.Button(btns2, text="hemtt utils fnl", command=self._run_utils_fnl)
-        # Add an info icon using a Unicode info symbol for clarity
-        self.btn_book = ttk.Button(btns2, text="hemtt book ℹ", command=self._open_book)
+        self.btn_ln_sort = ttk.Button(btns2, text="hemtt ln sort ⓘ", command=self._run_ln_sort)
+        self._create_tooltip(self.btn_ln_sort, "Sort stringtable entries\nOrganizes localization keys alphabetically")
+
+        self.btn_ln_coverage = ttk.Button(btns2, text="hemtt ln coverage ⓘ", command=self._run_ln_coverage)
+        self._create_tooltip(self.btn_ln_coverage, "Check stringtable coverage\nFinds missing translations")
+
+        self.btn_utils_fnl = ttk.Button(btns2, text="hemtt utils fnl ⓘ", command=self._run_utils_fnl)
+        self._create_tooltip(self.btn_utils_fnl, "Generate function list\nCreates documentation of all functions")
+
+        self.btn_book = ttk.Button(btns2, text="hemtt book ⓘ", command=self._open_book)
+        self._create_tooltip(self.btn_book, "Open HEMTT documentation\nOpens hemtt.dev in your browser")
 
         self.btn_ln_sort.pack(side=tk.LEFT, padx=(0, 8))
         self.btn_ln_coverage.pack(side=tk.LEFT, padx=(0, 8))
         self.btn_utils_fnl.pack(side=tk.LEFT, padx=(0, 8))
         self.btn_book.pack(side=tk.LEFT)
-
-        # Options frame - General options (all commands)
-        general_frame = ttk.LabelFrame(self, text="General Options (All Commands)", padding=(8, 8))
-        general_frame.pack(fill=tk.X, padx=8, pady=(4, 0))
-
-        general_row = ttk.Frame(general_frame)
-        general_row.pack(fill=tk.X, pady=2)
-        self.verbose_var = tk.BooleanVar(value=False)
-        self.verbose_check = ttk.Checkbutton(
-            general_row, text="Verbose (-v)", variable=self.verbose_var
-        )
-        self.verbose_check.pack(side=tk.LEFT, padx=(0, 8))
-
-        ttk.Label(general_row, text="Threads (-t):").pack(side=tk.LEFT, padx=(8, 4))
-        self.threads_var = tk.StringVar()
-        threads_spinbox = ttk.Spinbox(
-            general_row, from_=1, to=32, textvariable=self.threads_var, width=5
-        )
-        threads_spinbox.pack(side=tk.LEFT)
-
-        # Check command options
-        check_frame = ttk.LabelFrame(self, text="Check Options", padding=(8, 8))
-        check_frame.pack(fill=tk.X, padx=8, pady=(4, 0))
-
-        check_row = ttk.Frame(check_frame)
-        check_row.pack(fill=tk.X, pady=2)
-        self.pedantic_var = tk.BooleanVar(value=False)
-        self.pedantic_check = ttk.Checkbutton(
-            check_row, text="Pedantic (-p)", variable=self.pedantic_var
-        )
-        self.pedantic_check.pack(side=tk.LEFT, padx=(0, 8))
-
-        ttk.Label(check_row, text="Lints (-L):").pack(side=tk.LEFT, padx=(8, 4))
-        self.lints_var = tk.StringVar()
-        lints_entry = ttk.Entry(check_row, textvariable=self.lints_var, width=30)
-        lints_entry.pack(side=tk.LEFT)
-        ttk.Label(check_row, text="(comma-separated)").pack(side=tk.LEFT, padx=(4, 0))
-
-        # Dev/Build/Launch options
-        build_frame = ttk.LabelFrame(self, text="Dev/Build/Launch Options", padding=(8, 8))
-        build_frame.pack(fill=tk.X, padx=8, pady=(4, 0))
-
-        # Row 1 - Binarization and RAP options
-        build_row1 = ttk.Frame(build_frame)
-        build_row1.pack(fill=tk.X, pady=2)
-        self.binarize_var = tk.BooleanVar(value=False)
-        self.binarize_check = ttk.Checkbutton(
-            build_row1, text="Binarize (-b)", variable=self.binarize_var
-        )
-        self.binarize_check.pack(side=tk.LEFT, padx=(0, 8))
-        self.no_rap_var = tk.BooleanVar(value=False)
-        self.no_rap_check = ttk.Checkbutton(
-            build_row1, text="No Rap (--no-rap)", variable=self.no_rap_var
-        )
-        self.no_rap_check.pack(side=tk.LEFT, padx=(0, 8))
-        self.all_optionals_var = tk.BooleanVar(value=False)
-        self.all_optionals_check = ttk.Checkbutton(
-            build_row1, text="All Optionals (-O)", variable=self.all_optionals_var
-        )
-        self.all_optionals_check.pack(side=tk.LEFT)
-
-        # Row 2 - Optional addons and Just
-        build_row2 = ttk.Frame(build_frame)
-        build_row2.pack(fill=tk.X, pady=2)
-        ttk.Label(build_row2, text="Optional addons (-o):").pack(side=tk.LEFT, padx=(0, 4))
-        self.optional_addons_var = tk.StringVar()
-        optional_entry = ttk.Entry(build_row2, textvariable=self.optional_addons_var, width=20)
-        optional_entry.pack(side=tk.LEFT, padx=(0, 12))
-
-        ttk.Label(build_row2, text="Just (--just):").pack(side=tk.LEFT, padx=(0, 4))
-        self.just_var = tk.StringVar()
-        just_entry = ttk.Entry(build_row2, textvariable=self.just_var, width=20)
-        just_entry.pack(side=tk.LEFT)
-        ttk.Label(build_row2, text="(comma-separated)").pack(side=tk.LEFT, padx=(4, 0))
-
-        # Release options
-        release_frame = ttk.LabelFrame(self, text="Release Options", padding=(8, 8))
-        release_frame.pack(fill=tk.X, padx=8, pady=(4, 0))
-
-        release_row = ttk.Frame(release_frame)
-        release_row.pack(fill=tk.X, pady=2)
-        self.no_bin_var = tk.BooleanVar(value=False)
-        self.no_bin_check = ttk.Checkbutton(
-            release_row, text="No Binarize (--no-bin)", variable=self.no_bin_var
-        )
-        self.no_bin_check.pack(side=tk.LEFT, padx=(0, 8))
-        self.no_sign_var = tk.BooleanVar(value=False)
-        self.no_sign_check = ttk.Checkbutton(
-            release_row, text="No Sign (--no-sign)", variable=self.no_sign_var
-        )
-        self.no_sign_check.pack(side=tk.LEFT, padx=(0, 8))
-        self.no_archive_var = tk.BooleanVar(value=False)
-        self.no_archive_check = ttk.Checkbutton(
-            release_row, text="No Archive (--no-archive)", variable=self.no_archive_var
-        )
-        self.no_archive_check.pack(side=tk.LEFT)
 
         # Utility buttons frame
         util_btns = ttk.Frame(self, padding=(8, 4))
@@ -334,9 +283,6 @@ class HemttGUI(tk.Tk):
         self.hemtt_var.set(hemtt_path)
         self.proj_var.set(proj_dir)
         self.arma3_var.set(arma3_path)
-        # Load option toggles
-        self.verbose_var.set(bool(self.config_data.get("verbose", False)))
-        self.pedantic_var.set(bool(self.config_data.get("pedantic", False)))
 
     def _browse_hemtt(self):
         """Open a file dialog to select the HEMTT executable and persist path."""
@@ -381,8 +327,6 @@ class HemttGUI(tk.Tk):
                 "project_dir": self.proj_var.get().strip() or os.getcwd(),
                 "arma3_executable": self.arma3_var.get().strip(),
                 "dark_mode": self.dark_mode,
-                "verbose": bool(self.verbose_var.get()),
-                "pedantic": bool(self.pedantic_var.get()),
             }
         )
 
@@ -608,14 +552,6 @@ class HemttGUI(tk.Tk):
             self.btn_update_hemtt,
             self.btn_custom,
             self.custom_entry,
-            self.verbose_check,
-            self.pedantic_check,
-            self.binarize_check,
-            self.no_rap_check,
-            self.all_optionals_check,
-            self.no_bin_check,
-            self.no_sign_check,
-            self.no_archive_check,
         ]
         for w in widgets:
             if running:
@@ -660,14 +596,14 @@ class HemttGUI(tk.Tk):
         return hemtt, proj
 
     def _run(self, args: list[str], command_type: str = "other"):
-        """Start running a HEMTT command with optional flags.
+        """Start running a HEMTT command with arguments from dialogs.
 
         Parameters
         ----------
         args: list[str]
-            Arguments after the 'hemtt' executable (e.g., ["build"]).
+            Full arguments after the 'hemtt' executable, including all flags.
         command_type: str
-            Type of command: "check", "dev", "build", "launch", "release", or "other".
+            Type of command for tracking purposes.
         """
         validated = self._validated_paths()
         if not validated:
@@ -680,68 +616,7 @@ class HemttGUI(tk.Tk):
         self.output.configure(state=tk.DISABLED)
         self._persist_config()
 
-        # Start building command arguments
-        full_args = args.copy()
-
-        # Add global options (all commands support these)
-        if self.verbose_var.get():
-            full_args.append("-v")
-
-        threads = self.threads_var.get().strip()
-        if threads:
-            full_args.extend(["-t", threads])
-
-        # Add command-specific options
-        if command_type == "check":
-            # Check-specific options
-            if self.pedantic_var.get():
-                full_args.append("-p")
-
-            lints = self.lints_var.get().strip()
-            if lints:
-                for lint in lints.split(","):
-                    lint = lint.strip()
-                    if lint:
-                        full_args.extend(["-L", lint])
-
-        elif command_type in ["dev", "build", "launch"]:
-            # Dev/Build/Launch options
-            if self.binarize_var.get():
-                full_args.append("-b")
-            if self.no_rap_var.get():
-                full_args.append("--no-rap")
-            if self.all_optionals_var.get():
-                full_args.append("-O")
-
-            # Add optional addons
-            optionals = self.optional_addons_var.get().strip()
-            if optionals:
-                for opt in optionals.split(","):
-                    opt = opt.strip()
-                    if opt:
-                        full_args.extend(["-o", opt])
-
-            # Add just option (dev and build support this)
-            if command_type in ["dev", "build"]:
-                just = self.just_var.get().strip()
-                if just:
-                    for j in just.split(","):
-                        j = j.strip()
-                        if j:
-                            full_args.extend(["--just", j])
-
-        elif command_type == "release":
-            # Release-specific options
-            if self.no_bin_var.get():
-                full_args.append("--no-bin")
-            if self.no_rap_var.get():
-                full_args.append("--no-rap")
-            if self.no_sign_var.get():
-                full_args.append("--no-sign")
-            if self.no_archive_var.get():
-                full_args.append("--no-archive")
-
-        cmd = build_command(hemtt, full_args)
+        cmd = build_command(hemtt, args)
         self._set_running(True, " ".join(cmd))
 
         self.runner = CommandRunner(
@@ -766,20 +641,36 @@ class HemttGUI(tk.Tk):
 
     # Button handlers
     def _run_build(self):
-        """Run 'hemtt build'."""
-        self._run(["build"], command_type="build")
+        """Open build dialog and run hemtt build with selected options."""
+        dialog = BuildDialog(self)
+        self.wait_window(dialog)
+        if dialog.result:
+            args = ["build"] + dialog.result
+            self._run(args, command_type="build")
 
     def _run_release(self):
-        """Run 'hemtt release'."""
-        self._run(["release"], command_type="release")
+        """Open release dialog and run hemtt release with selected options."""
+        dialog = ReleaseDialog(self)
+        self.wait_window(dialog)
+        if dialog.result:
+            args = ["release"] + dialog.result
+            self._run(args, command_type="release")
 
     def _run_check(self):
-        """Run 'hemtt check'."""
-        self._run(["check"], command_type="check")
+        """Open check dialog and run hemtt check with selected options."""
+        dialog = CheckDialog(self)
+        self.wait_window(dialog)
+        if dialog.result:
+            args = ["check"] + dialog.result
+            self._run(args, command_type="check")
 
     def _run_dev(self):
-        """Run 'hemtt dev'."""
-        self._run(["dev"], command_type="dev")
+        """Open dev dialog and run hemtt dev with selected options."""
+        dialog = DevDialog(self)
+        self.wait_window(dialog)
+        if dialog.result:
+            args = ["dev"] + dialog.result
+            self._run(args, command_type="dev")
 
     def _run_utils_fnl(self):
         """Run 'hemtt utils fnl'."""
@@ -858,6 +749,393 @@ class HemttGUI(tk.Tk):
             if not messagebox.askyesno(APP_TITLE, "A command is still running. Exit anyway?"):
                 return
         self._persist_config()
+        self.destroy()
+
+
+class CheckDialog(tk.Toplevel):
+    """Dialog for configuring hemtt check options."""
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.title("HEMTT Check Configuration")
+        self.resizable(False, False)
+        self.result = None
+
+        self.transient(parent)
+        self.grab_set()
+
+        # Check options
+        options_frame = ttk.LabelFrame(self, text="Check Options", padding=10)
+        options_frame.pack(fill=tk.X, padx=10, pady=5)
+
+        self.pedantic_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(
+            options_frame, text="Pedantic (-p)", variable=self.pedantic_var
+        ).pack(anchor=tk.W, pady=2)
+
+        # Lints
+        lints_frame = ttk.Frame(options_frame)
+        lints_frame.pack(fill=tk.X, pady=5)
+        ttk.Label(lints_frame, text="Lints (-L):").pack(side=tk.LEFT)
+        self.lints_var = tk.StringVar()
+        lints_entry = ttk.Entry(lints_frame, textvariable=self.lints_var, width=30)
+        lints_entry.pack(side=tk.LEFT, padx=5)
+        ttk.Label(lints_frame, text="(comma-separated)", font=("TkDefaultFont", 8)).pack(side=tk.LEFT)
+
+        # Global options
+        global_frame = ttk.LabelFrame(self, text="Global Options", padding=10)
+        global_frame.pack(fill=tk.X, padx=10, pady=5)
+
+        self.verbose_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(
+            global_frame, text="Verbose (-v)", variable=self.verbose_var
+        ).pack(anchor=tk.W, pady=2)
+
+        threads_frame = ttk.Frame(global_frame)
+        threads_frame.pack(fill=tk.X, pady=2)
+        ttk.Label(threads_frame, text="Threads (-t):").pack(side=tk.LEFT)
+        self.threads_var = tk.StringVar()
+        ttk.Spinbox(threads_frame, from_=1, to=32, textvariable=self.threads_var, width=5).pack(side=tk.LEFT, padx=5)
+
+        # Buttons
+        btn_frame = ttk.Frame(self, padding=10)
+        btn_frame.pack(fill=tk.X)
+        ttk.Button(btn_frame, text="Run", command=self._on_run).pack(side=tk.RIGHT, padx=(5, 0))
+        ttk.Button(btn_frame, text="Cancel", command=self._on_cancel).pack(side=tk.RIGHT)
+
+        self._center_on_parent(parent)
+
+    def _center_on_parent(self, parent):
+        self.update_idletasks()
+        x = parent.winfo_x() + (parent.winfo_width() - self.winfo_width()) // 2
+        y = parent.winfo_y() + (parent.winfo_height() - self.winfo_height()) // 2
+        self.geometry(f"+{x}+{y}")
+
+    def _on_run(self):
+        args = ["check"]
+
+        if self.pedantic_var.get():
+            args.append("-p")
+
+        lints = self.lints_var.get().strip()
+        if lints:
+            for lint in lints.split(","):
+                lint = lint.strip()
+                if lint:
+                    args.extend(["-L", lint])
+
+        if self.verbose_var.get():
+            args.append("-v")
+
+        threads = self.threads_var.get().strip()
+        if threads:
+            args.extend(["-t", threads])
+
+        self.result = args[1:]  # Remove "check" since it's added by caller
+        self.destroy()
+
+    def _on_cancel(self):
+        self.result = None
+        self.destroy()
+
+
+class DevDialog(tk.Toplevel):
+    """Dialog for configuring hemtt dev options."""
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.title("HEMTT Dev Configuration")
+        self.resizable(False, False)
+        self.result = None
+
+        self.transient(parent)
+        self.grab_set()
+
+        # Dev options
+        options_frame = ttk.LabelFrame(self, text="Dev Options", padding=10)
+        options_frame.pack(fill=tk.X, padx=10, pady=5)
+
+        self.binarize_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(
+            options_frame, text="Binarize (-b)", variable=self.binarize_var
+        ).pack(anchor=tk.W, pady=2)
+
+        self.no_rap_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(
+            options_frame, text="No RAP (--no-rap)", variable=self.no_rap_var
+        ).pack(anchor=tk.W, pady=2)
+
+        self.all_optionals_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(
+            options_frame, text="All Optionals (-O)", variable=self.all_optionals_var
+        ).pack(anchor=tk.W, pady=2)
+
+        # Optional addons
+        optional_frame = ttk.Frame(options_frame)
+        optional_frame.pack(fill=tk.X, pady=5)
+        ttk.Label(optional_frame, text="Optional addons (-o):").pack(side=tk.LEFT)
+        self.optional_var = tk.StringVar()
+        ttk.Entry(optional_frame, textvariable=self.optional_var, width=30).pack(side=tk.LEFT, padx=5)
+        ttk.Label(optional_frame, text="(comma-separated)", font=("TkDefaultFont", 8)).pack(side=tk.LEFT)
+
+        # Just
+        just_frame = ttk.Frame(options_frame)
+        just_frame.pack(fill=tk.X, pady=5)
+        ttk.Label(just_frame, text="Just (--just):").pack(side=tk.LEFT)
+        self.just_var = tk.StringVar()
+        ttk.Entry(just_frame, textvariable=self.just_var, width=30).pack(side=tk.LEFT, padx=5)
+        ttk.Label(just_frame, text="(comma-separated)", font=("TkDefaultFont", 8)).pack(side=tk.LEFT)
+
+        # Global options
+        global_frame = ttk.LabelFrame(self, text="Global Options", padding=10)
+        global_frame.pack(fill=tk.X, padx=10, pady=5)
+
+        self.verbose_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(
+            global_frame, text="Verbose (-v)", variable=self.verbose_var
+        ).pack(anchor=tk.W, pady=2)
+
+        threads_frame = ttk.Frame(global_frame)
+        threads_frame.pack(fill=tk.X, pady=2)
+        ttk.Label(threads_frame, text="Threads (-t):").pack(side=tk.LEFT)
+        self.threads_var = tk.StringVar()
+        ttk.Spinbox(threads_frame, from_=1, to=32, textvariable=self.threads_var, width=5).pack(side=tk.LEFT, padx=5)
+
+        # Buttons
+        btn_frame = ttk.Frame(self, padding=10)
+        btn_frame.pack(fill=tk.X)
+        ttk.Button(btn_frame, text="Run", command=self._on_run).pack(side=tk.RIGHT, padx=(5, 0))
+        ttk.Button(btn_frame, text="Cancel", command=self._on_cancel).pack(side=tk.RIGHT)
+
+        self._center_on_parent(parent)
+
+    def _center_on_parent(self, parent):
+        self.update_idletasks()
+        x = parent.winfo_x() + (parent.winfo_width() - self.winfo_width()) // 2
+        y = parent.winfo_y() + (parent.winfo_height() - self.winfo_height()) // 2
+        self.geometry(f"+{x}+{y}")
+
+    def _on_run(self):
+        args = ["dev"]
+
+        if self.binarize_var.get():
+            args.append("-b")
+        if self.no_rap_var.get():
+            args.append("--no-rap")
+        if self.all_optionals_var.get():
+            args.append("-O")
+
+        optionals = self.optional_var.get().strip()
+        if optionals:
+            for opt in optionals.split(","):
+                opt = opt.strip()
+                if opt:
+                    args.extend(["-o", opt])
+
+        just = self.just_var.get().strip()
+        if just:
+            for j in just.split(","):
+                j = j.strip()
+                if j:
+                    args.extend(["--just", j])
+
+        if self.verbose_var.get():
+            args.append("-v")
+
+        threads = self.threads_var.get().strip()
+        if threads:
+            args.extend(["-t", threads])
+
+        self.result = args[1:]  # Remove "dev" since it's added by caller
+        self.destroy()
+
+    def _on_cancel(self):
+        self.result = None
+        self.destroy()
+
+
+class BuildDialog(tk.Toplevel):
+    """Dialog for configuring hemtt build options."""
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.title("HEMTT Build Configuration")
+        self.resizable(False, False)
+        self.result = None
+
+        self.transient(parent)
+        self.grab_set()
+
+        # Build options
+        options_frame = ttk.LabelFrame(self, text="Build Options", padding=10)
+        options_frame.pack(fill=tk.X, padx=10, pady=5)
+
+        self.no_bin_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(
+            options_frame, text="No Binarize (--no-bin)", variable=self.no_bin_var
+        ).pack(anchor=tk.W, pady=2)
+
+        self.no_rap_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(
+            options_frame, text="No RAP (--no-rap)", variable=self.no_rap_var
+        ).pack(anchor=tk.W, pady=2)
+
+        # Just
+        just_frame = ttk.Frame(options_frame)
+        just_frame.pack(fill=tk.X, pady=5)
+        ttk.Label(just_frame, text="Just (--just):").pack(side=tk.LEFT)
+        self.just_var = tk.StringVar()
+        ttk.Entry(just_frame, textvariable=self.just_var, width=30).pack(side=tk.LEFT, padx=5)
+        ttk.Label(just_frame, text="(comma-separated)", font=("TkDefaultFont", 8)).pack(side=tk.LEFT)
+
+        # Global options
+        global_frame = ttk.LabelFrame(self, text="Global Options", padding=10)
+        global_frame.pack(fill=tk.X, padx=10, pady=5)
+
+        self.verbose_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(
+            global_frame, text="Verbose (-v)", variable=self.verbose_var
+        ).pack(anchor=tk.W, pady=2)
+
+        threads_frame = ttk.Frame(global_frame)
+        threads_frame.pack(fill=tk.X, pady=2)
+        ttk.Label(threads_frame, text="Threads (-t):").pack(side=tk.LEFT)
+        self.threads_var = tk.StringVar()
+        ttk.Spinbox(threads_frame, from_=1, to=32, textvariable=self.threads_var, width=5).pack(side=tk.LEFT, padx=5)
+
+        # Buttons
+        btn_frame = ttk.Frame(self, padding=10)
+        btn_frame.pack(fill=tk.X)
+        ttk.Button(btn_frame, text="Run", command=self._on_run).pack(side=tk.RIGHT, padx=(5, 0))
+        ttk.Button(btn_frame, text="Cancel", command=self._on_cancel).pack(side=tk.RIGHT)
+
+        self._center_on_parent(parent)
+
+    def _center_on_parent(self, parent):
+        self.update_idletasks()
+        x = parent.winfo_x() + (parent.winfo_width() - self.winfo_width()) // 2
+        y = parent.winfo_y() + (parent.winfo_height() - self.winfo_height()) // 2
+        self.geometry(f"+{x}+{y}")
+
+    def _on_run(self):
+        args = ["build"]
+
+        if self.no_bin_var.get():
+            args.append("--no-bin")
+        if self.no_rap_var.get():
+            args.append("--no-rap")
+
+        just = self.just_var.get().strip()
+        if just:
+            for j in just.split(","):
+                j = j.strip()
+                if j:
+                    args.extend(["--just", j])
+
+        if self.verbose_var.get():
+            args.append("-v")
+
+        threads = self.threads_var.get().strip()
+        if threads:
+            args.extend(["-t", threads])
+
+        self.result = args[1:]  # Remove "build" since it's added by caller
+        self.destroy()
+
+    def _on_cancel(self):
+        self.result = None
+        self.destroy()
+
+
+class ReleaseDialog(tk.Toplevel):
+    """Dialog for configuring hemtt release options."""
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.title("HEMTT Release Configuration")
+        self.resizable(False, False)
+        self.result = None
+
+        self.transient(parent)
+        self.grab_set()
+
+        # Release options
+        options_frame = ttk.LabelFrame(self, text="Release Options", padding=10)
+        options_frame.pack(fill=tk.X, padx=10, pady=5)
+
+        self.no_bin_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(
+            options_frame, text="No Binarize (--no-bin)", variable=self.no_bin_var
+        ).pack(anchor=tk.W, pady=2)
+
+        self.no_rap_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(
+            options_frame, text="No RAP (--no-rap)", variable=self.no_rap_var
+        ).pack(anchor=tk.W, pady=2)
+
+        self.no_sign_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(
+            options_frame, text="No Sign (--no-sign)", variable=self.no_sign_var
+        ).pack(anchor=tk.W, pady=2)
+
+        self.no_archive_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(
+            options_frame, text="No Archive (--no-archive)", variable=self.no_archive_var
+        ).pack(anchor=tk.W, pady=2)
+
+        # Global options
+        global_frame = ttk.LabelFrame(self, text="Global Options", padding=10)
+        global_frame.pack(fill=tk.X, padx=10, pady=5)
+
+        self.verbose_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(
+            global_frame, text="Verbose (-v)", variable=self.verbose_var
+        ).pack(anchor=tk.W, pady=2)
+
+        threads_frame = ttk.Frame(global_frame)
+        threads_frame.pack(fill=tk.X, pady=2)
+        ttk.Label(threads_frame, text="Threads (-t):").pack(side=tk.LEFT)
+        self.threads_var = tk.StringVar()
+        ttk.Spinbox(threads_frame, from_=1, to=32, textvariable=self.threads_var, width=5).pack(side=tk.LEFT, padx=5)
+
+        # Buttons
+        btn_frame = ttk.Frame(self, padding=10)
+        btn_frame.pack(fill=tk.X)
+        ttk.Button(btn_frame, text="Run", command=self._on_run).pack(side=tk.RIGHT, padx=(5, 0))
+        ttk.Button(btn_frame, text="Cancel", command=self._on_cancel).pack(side=tk.RIGHT)
+
+        self._center_on_parent(parent)
+
+    def _center_on_parent(self, parent):
+        self.update_idletasks()
+        x = parent.winfo_x() + (parent.winfo_width() - self.winfo_width()) // 2
+        y = parent.winfo_y() + (parent.winfo_height() - self.winfo_height()) // 2
+        self.geometry(f"+{x}+{y}")
+
+    def _on_run(self):
+        args = ["release"]
+
+        if self.no_bin_var.get():
+            args.append("--no-bin")
+        if self.no_rap_var.get():
+            args.append("--no-rap")
+        if self.no_sign_var.get():
+            args.append("--no-sign")
+        if self.no_archive_var.get():
+            args.append("--no-archive")
+
+        if self.verbose_var.get():
+            args.append("-v")
+
+        threads = self.threads_var.get().strip()
+        if threads:
+            args.extend(["-t", threads])
+
+        self.result = args[1:]  # Remove "release" since it's added by caller
+        self.destroy()
+
+    def _on_cancel(self):
+        self.result = None
         self.destroy()
 
 
