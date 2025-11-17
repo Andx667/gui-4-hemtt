@@ -1,6 +1,8 @@
 import os
 import queue
 import shutil
+import subprocess
+import sys
 import time
 import tkinter as tk
 import webbrowser
@@ -128,6 +130,14 @@ class HemttGUI(tk.Tk):
 
         top.columnconfigure(1, weight=1)
 
+        # Separator with title for main commands
+        main_separator_frame = ttk.Frame(self, padding=(8, 8, 8, 0))
+        main_separator_frame.pack(fill=tk.X)
+        ttk.Label(
+            main_separator_frame, text="Main Commands", font=("TkDefaultFont", 9, "bold")
+        ).pack(anchor=tk.W)
+        ttk.Separator(main_separator_frame, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=(2, 0))
+
         # Buttons frame - First row
         btns = ttk.Frame(self, padding=(8, 0))
         btns.pack(fill=tk.X, pady=(4, 0))
@@ -171,6 +181,14 @@ class HemttGUI(tk.Tk):
 
         self.btn_cancel.pack(side=tk.LEFT)
 
+        # Separator with title for helper commands
+        separator_frame = ttk.Frame(self, padding=(8, 8, 8, 0))
+        separator_frame.pack(fill=tk.X)
+        ttk.Label(separator_frame, text="Helper Commands", font=("TkDefaultFont", 9, "bold")).pack(
+            anchor=tk.W
+        )
+        ttk.Separator(separator_frame, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=(2, 0))
+
         # Buttons frame - Second row
         btns2 = ttk.Frame(self, padding=(8, 4))
         btns2.pack(fill=tk.X)
@@ -191,7 +209,16 @@ class HemttGUI(tk.Tk):
             btns2, text="hemtt utils fnl ⓘ", command=self._run_utils_fnl
         )
         self._create_tooltip(
-            self.btn_utils_fnl, "Generate function list\nCreates documentation of all functions"
+            self.btn_utils_fnl,
+            "Insert final newline into files if missing\nEnsures files end with newline (POSIX standard)",
+        )
+
+        self.btn_utils_bom = ttk.Button(
+            btns2, text="hemtt utils bom ⓘ", command=self._run_utils_bom
+        )
+        self._create_tooltip(
+            self.btn_utils_bom,
+            "Remove UTF-8 BOM markers from files\nFixes parsing issues caused by Byte Order Marks",
         )
 
         self.btn_book = ttk.Button(btns2, text="hemtt book ⓘ", command=self._open_book)
@@ -202,7 +229,16 @@ class HemttGUI(tk.Tk):
         self.btn_ln_sort.pack(side=tk.LEFT, padx=(0, 8))
         self.btn_ln_coverage.pack(side=tk.LEFT, padx=(0, 8))
         self.btn_utils_fnl.pack(side=tk.LEFT, padx=(0, 8))
+        self.btn_utils_bom.pack(side=tk.LEFT, padx=(0, 8))
         self.btn_book.pack(side=tk.LEFT)
+
+        # Separator with title for utility buttons
+        util_separator_frame = ttk.Frame(self, padding=(8, 8, 8, 0))
+        util_separator_frame.pack(fill=tk.X)
+        ttk.Label(util_separator_frame, text="Utilities", font=("TkDefaultFont", 9, "bold")).pack(
+            anchor=tk.W
+        )
+        ttk.Separator(util_separator_frame, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=(2, 0))
 
         # Utility buttons frame
         util_btns = ttk.Frame(self, padding=(8, 4))
@@ -214,9 +250,11 @@ class HemttGUI(tk.Tk):
         )
         self.btn_dark_mode.pack(side=tk.LEFT, padx=(0, 8))
 
-        # Export log button
-        self.btn_export_log = ttk.Button(util_btns, text="Export Log", command=self._export_log)
-        self.btn_export_log.pack(side=tk.LEFT)
+        # Open HEMTT log button
+        self.btn_open_log = ttk.Button(
+            util_btns, text="Open HEMTT Log", command=self._open_hemtt_log
+        )
+        self.btn_open_log.pack(side=tk.LEFT)
 
         # Custom command
         custom = ttk.Frame(self, padding=8)
@@ -452,6 +490,7 @@ class HemttGUI(tk.Tk):
         self.style.map(
             "TButton",
             background=[("active", "#d0d0d0"), ("pressed", "#c0c0c0")],
+            foreground=[("active", theme["button_fg"]), ("pressed", theme["button_fg"])],
         )
 
         # Configure checkbuttons
@@ -484,33 +523,31 @@ class HemttGUI(tk.Tk):
         self.output.tag_config("warning", foreground=self.light_theme["warning"])
         self.output.tag_config("info", foreground=self.light_theme["info"])
 
-    def _export_log(self):
-        """Export the current contents of the output pane to a UTF-8 text file."""
-        # Get the output text
-        output_text = self.output.get(1.0, tk.END)
-
-        if not output_text.strip():
-            messagebox.showinfo(APP_TITLE, "No log content to export.")
+    def _open_hemtt_log(self):
+        """Open .hemttout/latest.log in the default text editor."""
+        project_dir = self.config_data.get("project_dir", "")
+        if not project_dir:
+            messagebox.showwarning(APP_TITLE, "No project directory set.")
             return
 
-        # Ask user for save location
-        timestamp = time.strftime("%Y%m%d_%H%M%S")
-        default_filename = f"hemtt_log_{timestamp}.txt"
+        log_path = os.path.join(project_dir, ".hemttout", "latest.log")
 
-        filepath = filedialog.asksaveasfilename(
-            title="Export Log",
-            defaultextension=".txt",
-            initialfile=default_filename,
-            filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
-        )
+        if not os.path.exists(log_path):
+            messagebox.showinfo(
+                APP_TITLE,
+                f"Log file not found:\n{log_path}\n\nRun a HEMTT command first to generate the log.",
+            )
+            return
 
-        if filepath:
-            try:
-                with open(filepath, "w", encoding="utf-8") as f:
-                    f.write(output_text)
-                messagebox.showinfo(APP_TITLE, f"Log exported successfully to:\n{filepath}")
-            except Exception as e:
-                messagebox.showerror(APP_TITLE, f"Failed to export log:\n{e}")
+        try:
+            if sys.platform == "win32":
+                os.startfile(log_path)
+            elif sys.platform == "darwin":
+                subprocess.run(["open", log_path])
+            else:
+                subprocess.run(["xdg-open", log_path])
+        except Exception as e:
+            messagebox.showerror(APP_TITLE, f"Failed to open log file:\n{e}")
 
     def _append_output(self, text: str):
         """Append a line to the output widget with basic severity highlighting.
@@ -704,6 +741,10 @@ class HemttGUI(tk.Tk):
         """Run 'hemtt utils fnl'."""
         self._run(["utils", "fnl"], command_type="other")
 
+    def _run_utils_bom(self):
+        """Run 'hemtt utils bom'."""
+        self._run(["utils", "bom"], command_type="other")
+
     def _run_ln_sort(self):
         """Run 'hemtt ln sort'."""
         self._run(["ln", "sort"], command_type="other")
@@ -791,6 +832,10 @@ class CheckDialog(tk.Toplevel):
 
         self.transient(parent)
         self.grab_set()
+
+        # Apply dark mode if parent is in dark mode
+        if parent.dark_mode:
+            self.configure(bg=parent.dark_theme["bg"])
 
         # Check options
         options_frame = ttk.LabelFrame(self, text="Check Options", padding=10)
@@ -900,6 +945,10 @@ class DevDialog(tk.Toplevel):
 
         self.transient(parent)
         self.grab_set()
+
+        # Apply dark mode if parent is in dark mode
+        if parent.dark_mode:
+            self.configure(bg=parent.dark_theme["bg"])
 
         # Dev options
         options_frame = ttk.LabelFrame(self, text="Dev Options", padding=10)
@@ -1042,6 +1091,10 @@ class BuildDialog(tk.Toplevel):
         self.transient(parent)
         self.grab_set()
 
+        # Apply dark mode if parent is in dark mode
+        if parent.dark_mode:
+            self.configure(bg=parent.dark_theme["bg"])
+
         # Build options
         options_frame = ttk.LabelFrame(self, text="Build Options", padding=10)
         options_frame.pack(fill=tk.X, padx=10, pady=5)
@@ -1157,6 +1210,10 @@ class ReleaseDialog(tk.Toplevel):
         self.transient(parent)
         self.grab_set()
 
+        # Apply dark mode if parent is in dark mode
+        if parent.dark_mode:
+            self.configure(bg=parent.dark_theme["bg"])
+
         # Release options
         options_frame = ttk.LabelFrame(self, text="Release Options", padding=10)
         options_frame.pack(fill=tk.X, padx=10, pady=5)
@@ -1269,6 +1326,10 @@ class LaunchDialog(tk.Toplevel):
         # Make dialog modal
         self.transient(parent)
         self.grab_set()
+
+        # Apply dark mode if parent is in dark mode
+        if parent.dark_mode:
+            self.configure(bg=parent.dark_theme["bg"])
 
         # Profile configuration
         profile_frame = ttk.LabelFrame(self, text="Launch Profile", padding=10)
