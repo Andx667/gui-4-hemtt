@@ -441,6 +441,14 @@ class HemttGUI(tk.Tk):
             foreground=[("", theme["fg"])],
         )
 
+        # Configure radiobuttons
+        self.style.configure("TRadiobutton", background=theme["bg"], foreground=theme["fg"])
+        self.style.map(
+            "TRadiobutton",
+            background=[("", theme["bg"])],
+            foreground=[("", theme["fg"])],
+        )
+
         # Configure entry fields
         self.style.configure(
             "TEntry",
@@ -497,6 +505,14 @@ class HemttGUI(tk.Tk):
         self.style.configure("TCheckbutton", background=theme["bg"], foreground=theme["fg"])
         self.style.map(
             "TCheckbutton",
+            background=[("", theme["bg"])],
+            foreground=[("", theme["fg"])],
+        )
+
+        # Configure radiobuttons
+        self.style.configure("TRadiobutton", background=theme["bg"], foreground=theme["fg"])
+        self.style.map(
+            "TRadiobutton",
             background=[("", theme["bg"])],
             foreground=[("", theme["fg"])],
         )
