@@ -79,14 +79,16 @@ class CommandRunner:
         self._cancel_requested = False
         self.is_running = False
 
-    def start(self):
+    def start(self) -> None:
+        """Start the command runner in a background thread."""
         if self.is_running:
             return
         self._cancel_requested = False
         self._thread = threading.Thread(target=self._run, daemon=True)
         self._thread.start()
 
-    def cancel(self):
+    def cancel(self) -> None:
+        """Cancel the running process by terminating or killing it."""
         self._cancel_requested = True
         if self.process and self.is_running:
             try:
@@ -97,7 +99,8 @@ class CommandRunner:
                 except Exception:
                     pass
 
-    def _run(self):
+    def _run(self) -> None:
+        """Internal method to execute the command in a subprocess."""
         self.is_running = True
         try:
             # Prepare environment to disable color output from HEMTT

@@ -12,7 +12,7 @@ try:
     HAS_DND = True
 except ImportError:
     HAS_DND = False
-    TkinterDnD = None  # type: ignore
+    TkinterDnD = object  # Fallback to object instead of None
 
 from command_runner import CommandRunner, build_command
 from config_store import load_config, save_config
@@ -20,7 +20,7 @@ from config_store import load_config, save_config
 APP_TITLE = "GUI 4 HEMTT"
 
 
-class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore
+class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore[misc]
     """Tkinter-based GUI wrapper around the HEMTT CLI.
 
     Provides buttons for common commands, live process output, and user
@@ -50,16 +50,16 @@ class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore
         self._setup_main_window_dnd()
         self._poll_output_queue()
 
-    def _setup_main_window_dnd(self):
+    def _setup_main_window_dnd(self) -> None:
         """Setup drag and drop for project folder on main window."""
         if HAS_DND:
             try:
-                self.drop_target_register(DND_FILES)  # type: ignore
-                self.dnd_bind("<<Drop>>", self._on_main_window_drop)  # type: ignore
+                self.drop_target_register(DND_FILES)  # type: ignore[attr-defined]
+                self.dnd_bind("<<Drop>>", self._on_main_window_drop)  # type: ignore[attr-defined]
             except Exception:
                 pass
 
-    def _on_main_window_drop(self, event):
+    def _on_main_window_drop(self, event) -> None:
         """Handle folder drops on main window to set project directory."""
         files = self.tk.splitlist(event.data)
         if files:
@@ -75,7 +75,7 @@ class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore
                     self.proj_var.set(parent_dir)
                     self._persist_config()
 
-    def _create_tooltip(self, widget, text):
+    def _create_tooltip(self, widget, text: str) -> None:
         """Create a tooltip for a widget."""
 
         def on_enter(event):
@@ -95,7 +95,7 @@ class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore
             label.pack()
             widget._tooltip = tooltip
 
-        def on_leave(event):
+        def on_leave(_event):
             if hasattr(widget, "_tooltip"):
                 widget._tooltip.destroy()
                 del widget._tooltip
@@ -103,7 +103,7 @@ class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore
         widget.bind("<Enter>", on_enter)
         widget.bind("<Leave>", on_leave)
 
-    def _build_ui(self):
+    def _build_ui(self) -> None:
         """Create and lay out all UI widgets."""
         # Winget install/update frame (top-most)
         winget_frame = ttk.Frame(self, padding=(8, 8))
@@ -408,7 +408,7 @@ class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore
         else:
             self._apply_light_mode()
 
-    def _load_config_into_ui(self):
+    def _load_config_into_ui(self) -> None:
         """Populate the UI from the persisted configuration file."""
         hemtt_path = self.config_data.get("hemtt_path") or "hemtt"
         proj_dir = self.config_data.get("project_dir") or os.getcwd()
@@ -417,7 +417,7 @@ class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore
         self.proj_var.set(proj_dir)
         self.arma3_var.set(arma3_path)
 
-    def _browse_hemtt(self):
+    def _browse_hemtt(self) -> None:
         """Open a file dialog to select the HEMTT executable and persist path."""
         initial = self.hemtt_var.get() or os.getcwd()
         path = filedialog.askopenfilename(
@@ -429,7 +429,7 @@ class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore
             self.hemtt_var.set(path)
             self._persist_config()
 
-    def _browse_project(self):
+    def _browse_project(self) -> None:
         """Open a folder dialog to select the project directory and persist it."""
         initial = self.proj_var.get() or os.getcwd()
         path = filedialog.askdirectory(title="Select project directory", initialdir=initial)
@@ -437,7 +437,7 @@ class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore
             self.proj_var.set(path)
             self._persist_config()
 
-    def _browse_arma3(self):
+    def _browse_arma3(self) -> None:
         """Open a file dialog to select the Arma 3 executable and persist path."""
         initial = self.arma3_var.get()
         initialdir = (
@@ -452,7 +452,7 @@ class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore
             self.arma3_var.set(path)
             self._persist_config()
 
-    def _persist_config(self):
+    def _persist_config(self) -> None:
         """Write current UI settings and preferences to the config file."""
         save_config(
             {
@@ -463,7 +463,7 @@ class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore
             }
         )
 
-    def _toggle_dark_mode(self):
+    def _toggle_dark_mode(self) -> None:
         """Toggle between light and dark mode and persist preference."""
         self.dark_mode = not self.dark_mode
         if self.dark_mode:
@@ -472,7 +472,7 @@ class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore
             self._apply_light_mode()
         self._persist_config()
 
-    def _apply_dark_mode(self):
+    def _apply_dark_mode(self) -> None:
         """Apply dark mode colors to the entire GUI and text tags."""
         theme = self.dark_theme
 
@@ -543,7 +543,7 @@ class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore
         self.output.tag_config("warning", foreground=theme["warning"])
         self.output.tag_config("info", foreground=theme["info"])
 
-    def _apply_light_mode(self):
+    def _apply_light_mode(self) -> None:
         """Apply light mode colors to the entire GUI and text tags."""
         theme = self.light_theme
 
@@ -643,7 +643,7 @@ class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore
         """Queue text from the background runner for UI-thread insertion."""
         self.output_queue.put(text)
 
-    def _poll_output_queue(self):
+    def _poll_output_queue(self) -> None:
         """Drain the output queue periodically and update elapsed time."""
         try:
             while True:
@@ -677,15 +677,15 @@ class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore
         ]
         for w in widgets:
             if running:
-                w.state(["disabled"])  # type: ignore[attr-defined]
+                w.state(["disabled"])  # type: ignore[attr-defined]  # ttk.Button has state method
             else:
-                w.state(["!disabled"])  # type: ignore[attr-defined]
+                w.state(["!disabled"])  # type: ignore[attr-defined]  # ttk.Button has state method
         if running:
-            self.btn_cancel.state(["!disabled"])  # type: ignore[attr-defined]
+            self.btn_cancel.state(["!disabled"])  # type: ignore[attr-defined]  # ttk.Button has state method
             self.status_var.set(f"Running: {command_str}")
             self.start_time = time.time()
         else:
-            self.btn_cancel.state(["disabled"])  # type: ignore[attr-defined]
+            self.btn_cancel.state(["disabled"])  # type: ignore[attr-defined]  # ttk.Button has state method
             self.status_var.set("Ready")
             self.start_time = 0.0
 
@@ -703,11 +703,10 @@ class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore
             return None
 
         # If hemtt is not an explicit path, allow PATH resolution
-        if os.path.sep in hemtt or (os.path.altsep and os.path.altsep in hemtt):
-            if not os.path.isfile(hemtt):
-                messagebox.showerror(APP_TITLE, f"HEMTT executable not found:\n{hemtt}")
-                return None
-        else:
+        if (os.path.sep in hemtt or (os.path.altsep and os.path.altsep in hemtt)) and not os.path.isfile(hemtt):
+            messagebox.showerror(APP_TITLE, f"HEMTT executable not found:\n{hemtt}")
+            return None
+        elif os.path.sep not in hemtt and (not os.path.altsep or os.path.altsep not in hemtt):
             resolved = shutil.which(hemtt)
             if resolved is None:
                 # Still allow to try, but warn user
@@ -760,67 +759,67 @@ class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore
         self._set_running(False)
         self.runner = None
 
-    def _cancel_run(self):
+    def _cancel_run(self) -> None:
         """Request cancellation of the running process, if any."""
         if self.runner:
             self.runner.cancel()
             self._enqueue_output("\n[Cancellation requested]\n")
 
     # Button handlers
-    def _run_build(self):
+    def _run_build(self) -> None:
         """Open build dialog and run hemtt build with selected options."""
         dialog = BuildDialog(self)
         self.wait_window(dialog)
         if dialog.result is not None:
-            args = ["build"] + dialog.result
+            args = ["build", *dialog.result]
             self._run(args, command_type="build")
 
-    def _run_release(self):
+    def _run_release(self) -> None:
         """Open release dialog and run hemtt release with selected options."""
         dialog = ReleaseDialog(self)
         self.wait_window(dialog)
         if dialog.result is not None:
-            args = ["release"] + dialog.result
+            args = ["release", *dialog.result]
             self._run(args, command_type="release")
 
-    def _run_check(self):
+    def _run_check(self) -> None:
         """Open check dialog and run hemtt check with selected options."""
         dialog = CheckDialog(self)
         self.wait_window(dialog)
         if dialog.result is not None:
-            args = ["check"] + dialog.result
+            args = ["check", *dialog.result]
             self._run(args, command_type="check")
 
-    def _run_dev(self):
+    def _run_dev(self) -> None:
         """Open dev dialog and run hemtt dev with selected options."""
         dialog = DevDialog(self)
         self.wait_window(dialog)
         if dialog.result is not None:
-            args = ["dev"] + dialog.result
+            args = ["dev", *dialog.result]
             self._run(args, command_type="dev")
 
-    def _run_utils_fnl(self):
+    def _run_utils_fnl(self) -> None:
         """Run 'hemtt utils fnl'."""
         self._run(["utils", "fnl"], command_type="other")
 
-    def _run_utils_bom(self):
+    def _run_utils_bom(self) -> None:
         """Run 'hemtt utils bom'."""
         self._run(["utils", "bom"], command_type="other")
 
-    def _run_ln_sort(self):
+    def _run_ln_sort(self) -> None:
         """Run 'hemtt ln sort'."""
         self._run(["ln", "sort"], command_type="other")
 
-    def _run_ln_coverage(self):
+    def _run_ln_coverage(self) -> None:
         """Run 'hemtt ln coverage'."""
         self._run(["ln", "coverage"], command_type="other")
 
-    def _run_paa_convert(self):
+    def _run_paa_convert(self) -> None:
         """Open PAA convert dialog and run hemtt utils paa convert with selected files."""
         dialog = PaaConvertDialog(self)
         self.wait_window(dialog)
         if dialog.result is not None:
-            args = ["utils", "paa", "convert"] + dialog.result
+            args = ["utils", "paa", "convert", *dialog.result]
             # Get the directory of the source file to use as working directory
             src_file = dialog.result[0] if dialog.result else None
             if src_file and os.path.isfile(src_file):
@@ -829,12 +828,12 @@ class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore
             else:
                 self._run(args, command_type="other")
 
-    def _run_paa_inspect(self):
+    def _run_paa_inspect(self) -> None:
         """Open PAA inspect dialog and run hemtt utils paa inspect with selected options."""
         dialog = PaaInspectDialog(self)
         self.wait_window(dialog)
         if dialog.result is not None:
-            args = ["utils", "paa", "inspect"] + dialog.result
+            args = ["utils", "paa", "inspect", *dialog.result]
             # Get the directory of the PAA file to use as working directory
             paa_file = dialog.result[0] if dialog.result else None
             if paa_file and os.path.isfile(paa_file):
@@ -843,12 +842,12 @@ class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore
             else:
                 self._run(args, command_type="other")
 
-    def _run_pbo_inspect(self):
+    def _run_pbo_inspect(self) -> None:
         """Open PBO inspect dialog and run hemtt utils pbo inspect with selected options."""
         dialog = PboInspectDialog(self)
         self.wait_window(dialog)
         if dialog.result is not None:
-            args = ["utils", "pbo", "inspect"] + dialog.result
+            args = ["utils", "pbo", "inspect", *dialog.result]
             # Get the directory of the PBO file to use as working directory
             pbo_file = dialog.result[0] if dialog.result else None
             if pbo_file and os.path.isfile(pbo_file):
@@ -857,12 +856,12 @@ class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore
             else:
                 self._run(args, command_type="other")
 
-    def _run_pbo_unpack(self):
+    def _run_pbo_unpack(self) -> None:
         """Open PBO unpack dialog and run hemtt utils pbo unpack with selected options."""
         dialog = PboUnpackDialog(self)
         self.wait_window(dialog)
         if dialog.result is not None:
-            args = ["utils", "pbo", "unpack"] + dialog.result
+            args = ["utils", "pbo", "unpack", *dialog.result]
             # Get the directory of the PBO file to use as working directory
             pbo_file = dialog.result[0] if dialog.result else None
             if pbo_file and os.path.isfile(pbo_file):
@@ -871,7 +870,7 @@ class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore
             else:
                 self._run(args, command_type="other")
 
-    def _run_custom(self):
+    def _run_custom(self) -> None:
         """Run a custom argument list typed by the user after 'hemtt'."""
         extra = self.custom_var.get().strip()
         if not extra:
@@ -880,15 +879,15 @@ class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore
         args = [a for a in extra.split(" ") if a]
         self._run(args, command_type="other")
 
-    def _install_hemtt(self):
+    def _install_hemtt(self) -> None:
         """Install HEMTT via winget (BrettMayson.HEMTT)."""
         self._run_winget(["install", "--id", "BrettMayson.HEMTT", "-e"], label="winget install")
 
-    def _update_hemtt(self):
+    def _update_hemtt(self) -> None:
         """Update/upgrade HEMTT via winget (BrettMayson.HEMTT)."""
         self._run_winget(["upgrade", "--id", "BrettMayson.HEMTT", "-e"], label="winget upgrade")
 
-    def _run_winget(self, winget_args: list[str], label: str):
+    def _run_winget(self, winget_args: list[str], label: str) -> None:
         """Run a winget command and stream output to the console.
 
         Parameters
@@ -903,7 +902,7 @@ class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore
         self.output.delete(1.0, tk.END)
         self.output.configure(state=tk.DISABLED)
 
-        cmd = ["winget"] + winget_args
+        cmd = ["winget", *winget_args]
         self._set_running(True, " ".join(cmd))
 
         self.runner = CommandRunner(
@@ -914,23 +913,23 @@ class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore
         )
         self.runner.start()
 
-    def _run_launch(self):
+    def _run_launch(self) -> None:
         """Open launch dialog and run hemtt launch with selected options."""
         arma3_exec = self.arma3_var.get().strip()
         dialog = LaunchDialog(self, arma3_exec)
         self.wait_window(dialog)
         if dialog.result is not None:
-            args = ["launch"] + dialog.result
+            args = ["launch", *dialog.result]
             self._run(args, command_type="launch")
 
-    def _open_book(self):
+    def _open_book(self) -> None:
         """Open the HEMTT documentation in the default web browser."""
         try:
             webbrowser.open("https://hemtt.dev")
         except Exception as e:
             messagebox.showerror(APP_TITLE, f"Failed to open browser:\n{e}")
 
-    def on_close(self):
+    def on_close(self) -> None:
         """Prompt on close if a command is running, then persist and exit."""
         if self.runner and self.runner.is_running:
             if not messagebox.askyesno(APP_TITLE, "A command is still running. Exit anyway?"):
@@ -946,7 +945,7 @@ class BaseCommandDialog(tk.Toplevel):
         super().__init__(parent)
         self.title(title)
         self.resizable(False, False)
-        self.result = None
+        self.result: list[str] | None = None
         self.parent = parent
 
         self.transient(parent)
@@ -1173,7 +1172,7 @@ class PaaConvertDialog(tk.Toplevel):
         super().__init__(parent)
         self.title("HEMTT PAA Convert")
         self.resizable(False, False)
-        self.result = None
+        self.result: list[str] | None = None
         self.parent = parent
 
         self.transient(parent)
@@ -1312,7 +1311,7 @@ class PaaInspectDialog(tk.Toplevel):
         super().__init__(parent)
         self.title("HEMTT PAA Inspect")
         self.resizable(False, False)
-        self.result = None
+        self.result: list[str] | None = None
         self.parent = parent
 
         self.transient(parent)
@@ -1430,7 +1429,7 @@ class PboInspectDialog(tk.Toplevel):
         super().__init__(parent)
         self.title("HEMTT PBO Inspect")
         self.resizable(False, False)
-        self.result = None
+        self.result: list[str] | None = None
         self.parent = parent
 
         self.transient(parent)
@@ -1548,7 +1547,7 @@ class PboUnpackDialog(tk.Toplevel):
         super().__init__(parent)
         self.title("HEMTT PBO Unpack")
         self.resizable(False, False)
-        self.result = None
+        self.result: list[str] | None = None
         self.parent = parent
 
         self.transient(parent)
@@ -1809,7 +1808,7 @@ class LaunchDialog(tk.Toplevel):
         super().__init__(parent)
         self.title("HEMTT Launch Configuration")
         self.resizable(False, False)
-        self.result = None
+        self.result: list[str] | None = None
 
         # Make dialog modal
         self.transient(parent)
@@ -1986,7 +1985,7 @@ class LaunchDialog(tk.Toplevel):
         self.destroy()
 
 
-def main():
+def main() -> None:
     """Entrypoint to start the Tkinter application."""
     app = HemttGUI()
     app.mainloop()
