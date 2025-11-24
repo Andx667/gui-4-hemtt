@@ -1347,11 +1347,11 @@ class PaaInspectDialog(tk.Toplevel):
             ("Pretty JSON", "pretty-json"),
             ("Markdown Table", "markdown"),
         ]
-        
+
         for text, value in format_options:
-            ttk.Radiobutton(
-                format_frame, text=text, variable=self.format_var, value=value
-            ).pack(anchor=tk.W, pady=2)
+            ttk.Radiobutton(format_frame, text=text, variable=self.format_var, value=value).pack(
+                anchor=tk.W, pady=2
+            )
 
         # Buttons
         btn_frame = ttk.Frame(self, padding=10)
