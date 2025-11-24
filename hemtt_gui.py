@@ -1,12 +1,18 @@
 import os
 import queue
 import shutil
-import subprocess
-import sys
 import time
 import tkinter as tk
 import webbrowser
 from tkinter import filedialog, messagebox, scrolledtext, ttk
+
+try:
+    from tkinterdnd2 import DND_FILES, TkinterDnD
+
+    HAS_DND = True
+except ImportError:
+    HAS_DND = False
+    TkinterDnD = None  # type: ignore
 
 from command_runner import CommandRunner, build_command
 from config_store import load_config, save_config
@@ -14,7 +20,7 @@ from config_store import load_config, save_config
 APP_TITLE = "GUI 4 HEMTT"
 
 
-class HemttGUI(tk.Tk):
+class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore
     """Tkinter-based GUI wrapper around the HEMTT CLI.
 
     Provides buttons for common commands, live process output, and user
@@ -41,7 +47,33 @@ class HemttGUI(tk.Tk):
         # Build UI
         self._build_ui()
         self._load_config_into_ui()
+        self._setup_main_window_dnd()
         self._poll_output_queue()
+
+    def _setup_main_window_dnd(self):
+        """Setup drag and drop for project folder on main window."""
+        if HAS_DND:
+            try:
+                self.drop_target_register(DND_FILES)  # type: ignore
+                self.dnd_bind("<<Drop>>", self._on_main_window_drop)  # type: ignore
+            except Exception:
+                pass
+
+    def _on_main_window_drop(self, event):
+        """Handle folder drops on main window to set project directory."""
+        files = self.tk.splitlist(event.data)
+        if files:
+            path = files[0].strip("{}").strip()
+            # Check if it's a directory
+            if os.path.isdir(path):
+                self.proj_var.set(path)
+                self._persist_config()
+            else:
+                # If file was dropped, use its parent directory
+                parent_dir = os.path.dirname(path)
+                if os.path.isdir(parent_dir):
+                    self.proj_var.set(parent_dir)
+                    self._persist_config()
 
     def _create_tooltip(self, widget, text):
         """Create a tooltip for a widget."""
@@ -221,6 +253,14 @@ class HemttGUI(tk.Tk):
             "Remove UTF-8 BOM markers from files\nFixes parsing issues caused by Byte Order Marks",
         )
 
+        self.btn_pbo_unpack = ttk.Button(
+            btns2, text="hemtt pbo unpack ⓘ", command=self._run_pbo_unpack
+        )
+        self._create_tooltip(
+            self.btn_pbo_unpack,
+            "Unpack a PBO file\nExtracts PBO contents with optional derapification",
+        )
+
         self.btn_book = ttk.Button(btns2, text="hemtt book ⓘ", command=self._open_book)
         self._create_tooltip(
             self.btn_book, "Open HEMTT documentation\nOpens hemtt.dev in your browser"
@@ -230,6 +270,7 @@ class HemttGUI(tk.Tk):
         self.btn_ln_coverage.pack(side=tk.LEFT, padx=(0, 8))
         self.btn_utils_fnl.pack(side=tk.LEFT, padx=(0, 8))
         self.btn_utils_bom.pack(side=tk.LEFT, padx=(0, 8))
+        self.btn_pbo_unpack.pack(side=tk.LEFT, padx=(0, 8))
         self.btn_book.pack(side=tk.LEFT)
 
         # Separator with title for utility buttons
@@ -249,12 +290,6 @@ class HemttGUI(tk.Tk):
             util_btns, text="Toggle Dark Mode", command=self._toggle_dark_mode
         )
         self.btn_dark_mode.pack(side=tk.LEFT, padx=(0, 8))
-
-        # Open HEMTT log button
-        self.btn_open_log = ttk.Button(
-            util_btns, text="Open HEMTT Log", command=self._open_hemtt_log
-        )
-        self.btn_open_log.pack(side=tk.LEFT)
 
         # Custom command
         custom = ttk.Frame(self, padding=8)
@@ -539,32 +574,6 @@ class HemttGUI(tk.Tk):
         self.output.tag_config("warning", foreground=self.light_theme["warning"])
         self.output.tag_config("info", foreground=self.light_theme["info"])
 
-    def _open_hemtt_log(self):
-        """Open .hemttout/latest.log in the default text editor."""
-        project_dir = self.config_data.get("project_dir", "")
-        if not project_dir:
-            messagebox.showwarning(APP_TITLE, "No project directory set.")
-            return
-
-        log_path = os.path.join(project_dir, ".hemttout", "latest.log")
-
-        if not os.path.exists(log_path):
-            messagebox.showinfo(
-                APP_TITLE,
-                f"Log file not found:\n{log_path}\n\nRun a HEMTT command first to generate the log.",
-            )
-            return
-
-        try:
-            if sys.platform == "win32":
-                os.startfile(log_path)
-            elif sys.platform == "darwin":
-                subprocess.run(["open", log_path])
-            else:
-                subprocess.run(["xdg-open", log_path])
-        except Exception as e:
-            messagebox.showerror(APP_TITLE, f"Failed to open log file:\n{e}")
-
     def _append_output(self, text: str):
         """Append a line to the output widget with basic severity highlighting.
 
@@ -676,7 +685,7 @@ class HemttGUI(tk.Tk):
                     return None
         return hemtt, proj
 
-    def _run(self, args: list[str], command_type: str = "other"):
+    def _run(self, args: list[str], command_type: str = "other", cwd: str | None = None):
         """Start running a HEMTT command with arguments from dialogs.
 
         Parameters
@@ -685,11 +694,16 @@ class HemttGUI(tk.Tk):
             Full arguments after the 'hemtt' executable, including all flags.
         command_type: str
             Type of command for tracking purposes.
+        cwd: str | None
+            Optional working directory. If None, uses project directory.
         """
         validated = self._validated_paths()
         if not validated:
             return
         hemtt, proj = validated
+
+        # Use provided cwd or default to project directory
+        working_dir = cwd if cwd is not None else proj
 
         # Clear output and persist config
         self.output.configure(state=tk.NORMAL)
@@ -702,7 +716,7 @@ class HemttGUI(tk.Tk):
 
         self.runner = CommandRunner(
             command=cmd,
-            cwd=proj,
+            cwd=working_dir,
             on_output=self._enqueue_output,
             on_exit=self._on_command_exit,
         )
@@ -768,6 +782,20 @@ class HemttGUI(tk.Tk):
     def _run_ln_coverage(self):
         """Run 'hemtt ln coverage'."""
         self._run(["ln", "coverage"], command_type="other")
+
+    def _run_pbo_unpack(self):
+        """Open PBO unpack dialog and run hemtt utils pbo unpack with selected options."""
+        dialog = PboUnpackDialog(self)
+        self.wait_window(dialog)
+        if dialog.result is not None:
+            args = ["utils", "pbo", "unpack"] + dialog.result
+            # Get the directory of the PBO file to use as working directory
+            pbo_file = dialog.result[0] if dialog.result else None
+            if pbo_file and os.path.isfile(pbo_file):
+                pbo_dir = os.path.dirname(os.path.abspath(pbo_file))
+                self._run(args, command_type="other", cwd=pbo_dir)
+            else:
+                self._run(args, command_type="other")
 
     def _run_custom(self):
         """Run a custom argument list typed by the user after 'hemtt'."""
@@ -1061,6 +1089,150 @@ class DevDialog(BaseCommandDialog):
         self._add_threads_to_args(args)
 
         self.result = args[1:]  # Remove "dev" since it's added by caller
+        self.destroy()
+
+
+class PboUnpackDialog(tk.Toplevel):
+    """Dialog for configuring hemtt utils pbo unpack options."""
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.title("HEMTT PBO Unpack")
+        self.resizable(False, False)
+        self.result = None
+        self.parent = parent
+
+        self.transient(parent)
+        self.grab_set()
+
+        # Apply dark mode if parent is in dark mode
+        if parent.dark_mode:
+            self.configure(bg=parent.dark_theme["bg"])
+
+        # PBO file selection
+        pbo_frame = ttk.LabelFrame(self, text="PBO File", padding=10)
+        pbo_frame.pack(fill=tk.X, padx=10, pady=5)
+
+        self.pbo_var = tk.StringVar()
+        pbo_entry_frame = ttk.Frame(pbo_frame)
+        pbo_entry_frame.pack(fill=tk.X)
+        ttk.Entry(pbo_entry_frame, textvariable=self.pbo_var, width=50).pack(
+            side=tk.LEFT, fill=tk.X, expand=True
+        )
+        ttk.Button(pbo_entry_frame, text="Browse...", command=self._browse_pbo).pack(
+            side=tk.LEFT, padx=(5, 0)
+        )
+
+        # Output directory selection
+        output_frame = ttk.LabelFrame(self, text="Output Directory (Optional)", padding=10)
+        output_frame.pack(fill=tk.X, padx=10, pady=5)
+
+        self.output_var = tk.StringVar()
+        output_entry_frame = ttk.Frame(output_frame)
+        output_entry_frame.pack(fill=tk.X)
+        ttk.Entry(output_entry_frame, textvariable=self.output_var, width=50).pack(
+            side=tk.LEFT, fill=tk.X, expand=True
+        )
+        ttk.Button(output_entry_frame, text="Browse...", command=self._browse_output).pack(
+            side=tk.LEFT, padx=(5, 0)
+        )
+        ttk.Label(
+            output_frame,
+            text="If not specified, creates a directory named after the PBO file",
+            font=("TkDefaultFont", 8),
+        ).pack(anchor=tk.W, pady=(5, 0))
+
+        # Options
+        options_frame = ttk.LabelFrame(self, text="Options", padding=10)
+        options_frame.pack(fill=tk.X, padx=10, pady=5)
+
+        self.derap_var = tk.BooleanVar(value=False)
+        derap_cb = ttk.Checkbutton(
+            options_frame,
+            text="Derapify rapified files (-r / --derap)",
+            variable=self.derap_var,
+        )
+        derap_cb.pack(anchor=tk.W, pady=2)
+        parent._create_tooltip(
+            derap_cb,
+            "Automatically converts binary config files (config.bin, etc.)\nback to readable format",
+        )
+
+        # Buttons
+        btn_frame = ttk.Frame(self, padding=10)
+        btn_frame.pack(fill=tk.X)
+        ttk.Button(btn_frame, text="Unpack", command=self._on_unpack).pack(
+            side=tk.RIGHT, padx=(5, 0)
+        )
+        ttk.Button(btn_frame, text="Cancel", command=self._on_cancel).pack(side=tk.RIGHT)
+
+        self._center_on_parent()
+        self._setup_pbo_dnd()
+
+    def _setup_pbo_dnd(self):
+        """Setup drag and drop for PBO files."""
+        if HAS_DND:
+            try:
+                self.drop_target_register(DND_FILES)  # type: ignore
+                self.dnd_bind("<<Drop>>", self._on_pbo_drop)  # type: ignore
+            except Exception:
+                pass
+
+    def _on_pbo_drop(self, event):
+        """Handle PBO file drops."""
+        files = self.tk.splitlist(event.data)
+        if files:
+            file_path = files[0].strip("{}").strip()
+            if file_path.lower().endswith(".pbo"):
+                self.pbo_var.set(file_path)
+            else:
+                messagebox.showwarning("Invalid File", "Please drop a .pbo file", parent=self)
+
+    def _browse_pbo(self):
+        """Open file dialog to select a PBO file."""
+        filename = filedialog.askopenfilename(
+            parent=self,
+            title="Select PBO file",
+            filetypes=[("PBO files", "*.pbo"), ("All files", "*.*")],
+        )
+        if filename:
+            self.pbo_var.set(filename)
+
+    def _browse_output(self):
+        """Open directory dialog to select output directory."""
+        dirname = filedialog.askdirectory(parent=self, title="Select output directory")
+        if dirname:
+            self.output_var.set(dirname)
+
+    def _center_on_parent(self):
+        """Center the dialog on the parent window."""
+        self.update_idletasks()
+        x = self.parent.winfo_x() + (self.parent.winfo_width() - self.winfo_width()) // 2
+        y = self.parent.winfo_y() + (self.parent.winfo_height() - self.winfo_height()) // 2
+        self.geometry(f"+{x}+{y}")
+
+    def _on_unpack(self):
+        """Validate inputs and build command arguments."""
+        pbo_file = self.pbo_var.get().strip()
+        if not pbo_file:
+            messagebox.showerror("Error", "Please select a PBO file", parent=self)
+            return
+
+        args = [pbo_file]
+
+        output_dir = self.output_var.get().strip()
+        if output_dir:
+            args.append(output_dir)
+
+        if self.derap_var.get():
+            args.append("--derap")
+
+        self.result = args
+        self.destroy()
+
+    def _on_cancel(self):
+        """Cancel the dialog without setting result."""
+        self.result = None
         self.destroy()
 
 

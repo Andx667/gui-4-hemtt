@@ -13,7 +13,7 @@ Below is an example of the GUI in use (dark mode with build options visible).
 - **One-click core commands**: `hemtt build`, `hemtt dev`, `hemtt check`, `hemtt release`, `hemtt launch`.
 - **Command-specific dialogs**: Each main command (check, dev, build, release, launch) opens a dedicated dialog with command-specific options and global settings.
 - **Winget convenience**: `Install HEMTT (winget)` and `Update HEMTT (winget)` buttons (Windows) to install or upgrade the `BrettMayson.HEMTT` package.
-- **Helper commands**: `hemtt ln sort`, `hemtt ln coverage`, `hemtt utils fnl`, `hemtt utils bom`, `hemtt book`.
+- **Helper commands**: `hemtt ln sort`, `hemtt ln coverage`, `hemtt utils fnl`, `hemtt utils bom`, `hemtt pbo unpack`, `hemtt book`.
 - **Additional commands**: `hemtt license`, `hemtt script <name>`, `hemtt new <project>`.
 - **Command options**:
   - **Check**: Pedantic mode (`-p`), custom lints (`-L`), verbosity levels (None/-v/-vv), threads (`-t`)
@@ -26,7 +26,7 @@ Below is an example of the GUI in use (dark mode with build options visible).
 - **Dark / Light mode toggle**: Fully styled controls with consistent theming across main window and dialogs.
 - **Open HEMTT Log**: Quick access to `.hemttout/latest.log` in your default text editor.
 - **Organized UI**: Labeled sections (Main Commands, Helper Commands, Utilities) with visual dividers.
-- **Drag & Drop**: Drop a folder anywhere in the window to set the project directory (optional dependency).
+- **Drag & Drop**: Drop a folder anywhere in the main window to set the project directory; drop `.pbo` files into the PBO Unpack dialog (optional dependency).
 - **Persistent configuration**: HEMTT executable, project directory, Arma 3 executable, and dark mode preference stored in `config.json`.
 - **Color-coded console output**: Basic severity detection (error / warning / info) with appropriate highlighting.
 - **Live status updates**: Elapsed time and status bar with real-time updates during command execution.
