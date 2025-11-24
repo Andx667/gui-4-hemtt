@@ -253,6 +253,14 @@ class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore
             "Remove UTF-8 BOM markers from files\nFixes parsing issues caused by Byte Order Marks",
         )
 
+        self.btn_pbo_inspect = ttk.Button(
+            btns2, text="hemtt pbo inspect ⓘ", command=self._run_pbo_inspect
+        )
+        self._create_tooltip(
+            self.btn_pbo_inspect,
+            "Inspect a PBO file\nShows PBO properties and contents in various formats",
+        )
+
         self.btn_pbo_unpack = ttk.Button(
             btns2, text="hemtt pbo unpack ⓘ", command=self._run_pbo_unpack
         )
@@ -270,6 +278,7 @@ class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore
         self.btn_ln_coverage.pack(side=tk.LEFT, padx=(0, 8))
         self.btn_utils_fnl.pack(side=tk.LEFT, padx=(0, 8))
         self.btn_utils_bom.pack(side=tk.LEFT, padx=(0, 8))
+        self.btn_pbo_inspect.pack(side=tk.LEFT, padx=(0, 8))
         self.btn_pbo_unpack.pack(side=tk.LEFT, padx=(0, 8))
         self.btn_book.pack(side=tk.LEFT)
 
@@ -783,6 +792,20 @@ class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore
         """Run 'hemtt ln coverage'."""
         self._run(["ln", "coverage"], command_type="other")
 
+    def _run_pbo_inspect(self):
+        """Open PBO inspect dialog and run hemtt utils pbo inspect with selected options."""
+        dialog = PboInspectDialog(self)
+        self.wait_window(dialog)
+        if dialog.result is not None:
+            args = ["utils", "pbo", "inspect"] + dialog.result
+            # Get the directory of the PBO file to use as working directory
+            pbo_file = dialog.result[0] if dialog.result else None
+            if pbo_file and os.path.isfile(pbo_file):
+                pbo_dir = os.path.dirname(os.path.abspath(pbo_file))
+                self._run(args, command_type="other", cwd=pbo_dir)
+            else:
+                self._run(args, command_type="other")
+
     def _run_pbo_unpack(self):
         """Open PBO unpack dialog and run hemtt utils pbo unpack with selected options."""
         dialog = PboUnpackDialog(self)
@@ -1089,6 +1112,124 @@ class DevDialog(BaseCommandDialog):
         self._add_threads_to_args(args)
 
         self.result = args[1:]  # Remove "dev" since it's added by caller
+        self.destroy()
+
+
+class PboInspectDialog(tk.Toplevel):
+    """Dialog for configuring hemtt utils pbo inspect options."""
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.title("HEMTT PBO Inspect")
+        self.resizable(False, False)
+        self.result = None
+        self.parent = parent
+
+        self.transient(parent)
+        self.grab_set()
+
+        # Apply dark mode if parent is in dark mode
+        if parent.dark_mode:
+            self.configure(bg=parent.dark_theme["bg"])
+
+        # PBO file selection
+        pbo_frame = ttk.LabelFrame(self, text="PBO File", padding=10)
+        pbo_frame.pack(fill=tk.X, padx=10, pady=5)
+
+        self.pbo_var = tk.StringVar()
+        pbo_entry_frame = ttk.Frame(pbo_frame)
+        pbo_entry_frame.pack(fill=tk.X)
+        ttk.Entry(pbo_entry_frame, textvariable=self.pbo_var, width=50).pack(
+            side=tk.LEFT, fill=tk.X, expand=True
+        )
+        ttk.Button(pbo_entry_frame, text="Browse...", command=self._browse_pbo).pack(
+            side=tk.LEFT, padx=(5, 0)
+        )
+
+        # Format selection
+        format_frame = ttk.LabelFrame(self, text="Output Format", padding=10)
+        format_frame.pack(fill=tk.X, padx=10, pady=5)
+
+        self.format_var = tk.StringVar(value="ascii")
+        format_options = [
+            ("ASCII Table (default)", "ascii"),
+            ("JSON (compact)", "json"),
+            ("Pretty JSON", "pretty-json"),
+            ("Markdown Table", "markdown"),
+        ]
+
+        for text, value in format_options:
+            ttk.Radiobutton(format_frame, text=text, variable=self.format_var, value=value).pack(
+                anchor=tk.W, pady=2
+            )
+
+        # Buttons
+        btn_frame = ttk.Frame(self, padding=10)
+        btn_frame.pack(fill=tk.X)
+        ttk.Button(btn_frame, text="Inspect", command=self._on_inspect).pack(
+            side=tk.RIGHT, padx=(5, 0)
+        )
+        ttk.Button(btn_frame, text="Cancel", command=self._on_cancel).pack(side=tk.RIGHT)
+
+        self._center_on_parent()
+        self._setup_pbo_dnd()
+
+    def _setup_pbo_dnd(self):
+        """Setup drag and drop for PBO files."""
+        if HAS_DND:
+            try:
+                self.drop_target_register(DND_FILES)  # type: ignore
+                self.dnd_bind("<<Drop>>", self._on_pbo_drop)  # type: ignore
+            except Exception:
+                pass
+
+    def _on_pbo_drop(self, event):
+        """Handle PBO file drops."""
+        files = self.tk.splitlist(event.data)
+        if files:
+            file_path = files[0].strip("{}").strip()
+            if file_path.lower().endswith(".pbo"):
+                self.pbo_var.set(file_path)
+            else:
+                messagebox.showwarning("Invalid File", "Please drop a .pbo file", parent=self)
+
+    def _browse_pbo(self):
+        """Open file dialog to select a PBO file."""
+        filename = filedialog.askopenfilename(
+            parent=self,
+            title="Select PBO file",
+            filetypes=[("PBO files", "*.pbo"), ("All files", "*.*")],
+        )
+        if filename:
+            self.pbo_var.set(filename)
+
+    def _center_on_parent(self):
+        """Center the dialog on the parent window."""
+        self.update_idletasks()
+        x = self.parent.winfo_x() + (self.parent.winfo_width() - self.winfo_width()) // 2
+        y = self.parent.winfo_y() + (self.parent.winfo_height() - self.winfo_height()) // 2
+        self.geometry(f"+{x}+{y}")
+
+    def _on_inspect(self):
+        """Validate inputs and build command arguments."""
+        pbo_file = self.pbo_var.get().strip()
+        if not pbo_file:
+            messagebox.showerror("Error", "Please select a PBO file", parent=self)
+            return
+
+        args = [pbo_file]
+
+        # Add format option if not default
+        format_choice = self.format_var.get()
+        if format_choice != "ascii":
+            args.extend(["--format", format_choice])
+
+        self.result = args
+        self.destroy()
+
+    def _on_cancel(self):
+        """Cancel the dialog without setting result."""
+        self.result = None
         self.destroy()
 
 

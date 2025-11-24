@@ -13,7 +13,7 @@ Below is an example of the GUI in use (dark mode with build options visible).
 - **One-click core commands**: `hemtt build`, `hemtt dev`, `hemtt check`, `hemtt release`, `hemtt launch`.
 - **Command-specific dialogs**: Each main command (check, dev, build, release, launch) opens a dedicated dialog with command-specific options and global settings.
 - **Winget convenience**: `Install HEMTT (winget)` and `Update HEMTT (winget)` buttons (Windows) to install or upgrade the `BrettMayson.HEMTT` package.
-- **Helper commands**: `hemtt ln sort`, `hemtt ln coverage`, `hemtt utils fnl`, `hemtt utils bom`, `hemtt pbo unpack`, `hemtt book`.
+- **Helper commands**: `hemtt ln sort`, `hemtt ln coverage`, `hemtt utils fnl`, `hemtt utils bom`, `hemtt pbo inspect`, `hemtt pbo unpack`, `hemtt book`.
 - **Additional commands**: `hemtt license`, `hemtt script <name>`, `hemtt new <project>`.
 - **Command options**:
   - **Check**: Pedantic mode (`-p`), custom lints (`-L`), verbosity levels (None/-v/-vv), threads (`-t`)
