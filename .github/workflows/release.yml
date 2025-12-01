@@ -23,7 +23,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller tkinterdnd2
+          pip install pyinstaller
+          pip install -r requirements.txt
 
       - name: Run tests
         run: |
@@ -31,7 +32,7 @@ jobs:
 
       - name: Build executable
         run: |
-          pyinstaller --name HemttGUI --windowed --onefile hemtt_gui.py
+          pyinstaller HemttGUI.spec
 
       - name: Archive artifact
         uses: actions/upload-artifact@v4
