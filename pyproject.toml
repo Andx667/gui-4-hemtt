@@ -16,6 +16,13 @@ skip-magic-trailing-comma = false
 line-length = 100
 target-version = ["py311"]
 
+[project]
+name = "hemtt-gui"
+version = "1.0.0"
+dependencies = [
+    "PySide6>=6.5.0"
+]
+
 [tool.mypy]
 python_version = "3.11"
 ignore_missing_imports = true
