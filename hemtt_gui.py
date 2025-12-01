@@ -5,22 +5,22 @@ import sys
 import time
 import webbrowser
 
-from PySide6.QtCore import Qt, QTimer, QMimeData, QUrl
-from PySide6.QtGui import QDragEnterEvent, QDropEvent, QPalette, QColor
+from PySide6.QtCore import QTimer
+from PySide6.QtGui import QColor, QDragEnterEvent, QDropEvent, QPalette
 from PySide6.QtWidgets import (
     QApplication,
-    QMainWindow,
-    QWidget,
-    QVBoxLayout,
-    QHBoxLayout,
-    QGridLayout,
-    QLabel,
-    QLineEdit,
-    QPushButton,
-    QTextEdit,
-    QMessageBox,
     QFileDialog,
     QFrame,
+    QGridLayout,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QMainWindow,
+    QMessageBox,
+    QPushButton,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
 )
 
 from command_runner import CommandRunner, build_command
