@@ -146,12 +146,16 @@ class HemttGUI(QMainWindow):
         winget_layout = QHBoxLayout()
         self.btn_install_hemtt = QPushButton("Install HEMTT (winget)")
         self.btn_install_hemtt.setStyleSheet(self.button_style)
-        self.btn_install_hemtt.setToolTip("Install HEMTT via Windows Package Manager\nRequires winget to be installed")
+        self.btn_install_hemtt.setToolTip(
+            "Install HEMTT via Windows Package Manager\nRequires winget to be installed"
+        )
         self.btn_install_hemtt.clicked.connect(self._install_hemtt)
 
         self.btn_update_hemtt = QPushButton("Update HEMTT (winget)")
         self.btn_update_hemtt.setStyleSheet(self.button_style)
-        self.btn_update_hemtt.setToolTip("Update HEMTT to latest version\nUses Windows Package Manager")
+        self.btn_update_hemtt.setToolTip(
+            "Update HEMTT to latest version\nUses Windows Package Manager"
+        )
         self.btn_update_hemtt.clicked.connect(self._update_hemtt)
 
         winget_layout.addWidget(self.btn_install_hemtt)
@@ -212,7 +216,9 @@ class HemttGUI(QMainWindow):
 
         self.btn_check = QPushButton("hemtt check")
         self.btn_check.setStyleSheet(self.button_style)
-        self.btn_check.setToolTip("Check project for errors\nQuick validation without building files")
+        self.btn_check.setToolTip(
+            "Check project for errors\nQuick validation without building files"
+        )
         self.btn_check.clicked.connect(self._run_check)
 
         self.btn_dev = QPushButton("hemtt dev")
@@ -222,7 +228,9 @@ class HemttGUI(QMainWindow):
 
         self.btn_launch = QPushButton("hemtt launch")
         self.btn_launch.setStyleSheet(self.button_style)
-        self.btn_launch.setToolTip("Build and launch Arma 3\nAutomatically loads mods and dependencies")
+        self.btn_launch.setToolTip(
+            "Build and launch Arma 3\nAutomatically loads mods and dependencies"
+        )
         self.btn_launch.clicked.connect(self._run_launch)
 
         self.btn_build = QPushButton("hemtt build")
@@ -271,7 +279,9 @@ class HemttGUI(QMainWindow):
 
         self.btn_ln_sort = QPushButton("hemtt ln sort")
         self.btn_ln_sort.setStyleSheet(self.button_style)
-        self.btn_ln_sort.setToolTip("Sort stringtable entries\nOrganizes localization keys alphabetically")
+        self.btn_ln_sort.setToolTip(
+            "Sort stringtable entries\nOrganizes localization keys alphabetically"
+        )
         self.btn_ln_sort.clicked.connect(self._run_ln_sort)
 
         self.btn_ln_coverage = QPushButton("hemtt ln coverage")
@@ -281,12 +291,16 @@ class HemttGUI(QMainWindow):
 
         self.btn_utils_fnl = QPushButton("hemtt utils fnl")
         self.btn_utils_fnl.setStyleSheet(self.button_style)
-        self.btn_utils_fnl.setToolTip("Insert final newline into files if missing\nEnsures files end with newline (POSIX standard)")
+        self.btn_utils_fnl.setToolTip(
+            "Insert final newline into files if missing\nEnsures files end with newline (POSIX standard)"
+        )
         self.btn_utils_fnl.clicked.connect(self._run_utils_fnl)
 
         self.btn_utils_bom = QPushButton("hemtt utils bom")
         self.btn_utils_bom.setStyleSheet(self.button_style)
-        self.btn_utils_bom.setToolTip("Remove UTF-8 BOM markers from files\nFixes parsing issues caused by Byte Order Marks")
+        self.btn_utils_bom.setToolTip(
+            "Remove UTF-8 BOM markers from files\nFixes parsing issues caused by Byte Order Marks"
+        )
         self.btn_utils_bom.clicked.connect(self._run_utils_bom)
 
         self.btn_book = QPushButton("hemtt book")
@@ -307,22 +321,30 @@ class HemttGUI(QMainWindow):
 
         self.btn_paa_convert = QPushButton("hemtt paa convert")
         self.btn_paa_convert.setStyleSheet(self.button_style)
-        self.btn_paa_convert.setToolTip("Convert image to/from PAA format\nSupports PNG, JPEG, BMP, etc.")
+        self.btn_paa_convert.setToolTip(
+            "Convert image to/from PAA format\nSupports PNG, JPEG, BMP, etc."
+        )
         self.btn_paa_convert.clicked.connect(self._run_paa_convert)
 
         self.btn_paa_inspect = QPushButton("hemtt paa inspect")
         self.btn_paa_inspect.setStyleSheet(self.button_style)
-        self.btn_paa_inspect.setToolTip("Inspect a PAA file\nShows PAA properties in various formats")
+        self.btn_paa_inspect.setToolTip(
+            "Inspect a PAA file\nShows PAA properties in various formats"
+        )
         self.btn_paa_inspect.clicked.connect(self._run_paa_inspect)
 
         self.btn_pbo_inspect = QPushButton("hemtt pbo inspect")
         self.btn_pbo_inspect.setStyleSheet(self.button_style)
-        self.btn_pbo_inspect.setToolTip("Inspect a PBO file\nShows PBO properties and contents in various formats")
+        self.btn_pbo_inspect.setToolTip(
+            "Inspect a PBO file\nShows PBO properties and contents in various formats"
+        )
         self.btn_pbo_inspect.clicked.connect(self._run_pbo_inspect)
 
         self.btn_pbo_unpack = QPushButton("hemtt pbo unpack")
         self.btn_pbo_unpack.setStyleSheet(self.button_style)
-        self.btn_pbo_unpack.setToolTip("Unpack a PBO file\nExtracts PBO contents with optional derapification")
+        self.btn_pbo_unpack.setToolTip(
+            "Unpack a PBO file\nExtracts PBO contents with optional derapification"
+        )
         self.btn_pbo_unpack.clicked.connect(self._run_pbo_unpack)
 
         btns3_layout.addWidget(self.btn_paa_convert)
@@ -431,7 +453,7 @@ class HemttGUI(QMainWindow):
             self,
             "Select HEMTT executable",
             os.path.dirname(initial) if os.path.isfile(initial) else initial,
-            "All files (*.*)"
+            "All files (*.*)",
         )
         if path:
             self.hemtt_entry.setText(path)
@@ -440,11 +462,7 @@ class HemttGUI(QMainWindow):
     def _browse_project(self) -> None:
         """Open a folder dialog to select the project directory and persist it."""
         initial = self.proj_entry.text() or os.getcwd()
-        path = QFileDialog.getExistingDirectory(
-            self,
-            "Select project directory",
-            initial
-        )
+        path = QFileDialog.getExistingDirectory(self, "Select project directory", initial)
         if path:
             self.proj_entry.setText(path)
             self._persist_config()
@@ -456,10 +474,7 @@ class HemttGUI(QMainWindow):
             os.path.dirname(initial) if initial and os.path.isfile(initial) else os.getcwd()
         )
         path, _ = QFileDialog.getOpenFileName(
-            self,
-            "Select Arma 3 executable",
-            initialdir,
-            "Executable (*.exe);;All files (*.*)"
+            self, "Select Arma 3 executable", initialdir, "Executable (*.exe);;All files (*.*)"
         )
         if path:
             self.arma3_entry.setText(path)
@@ -524,15 +539,28 @@ class HemttGUI(QMainWindow):
         """Apply current button style to all buttons in the GUI."""
         # List of button attribute names
         button_attrs = [
-            'btn_install_hemtt', 'btn_update_hemtt',
-            'hemtt_browse', 'proj_browse', 'arma3_browse',
-            'btn_check', 'btn_dev', 'btn_launch',
-            'btn_build', 'btn_release', 'btn_cancel',
-            'btn_ln_sort', 'btn_ln_coverage',
-            'btn_utils_fnl', 'btn_utils_bom', 'btn_book',
-            'btn_paa_convert', 'btn_paa_inspect',
-            'btn_pbo_inspect', 'btn_pbo_unpack',
-            'btn_dark_mode', 'btn_custom'
+            "btn_install_hemtt",
+            "btn_update_hemtt",
+            "hemtt_browse",
+            "proj_browse",
+            "arma3_browse",
+            "btn_check",
+            "btn_dev",
+            "btn_launch",
+            "btn_build",
+            "btn_release",
+            "btn_cancel",
+            "btn_ln_sort",
+            "btn_ln_coverage",
+            "btn_utils_fnl",
+            "btn_utils_bom",
+            "btn_book",
+            "btn_paa_convert",
+            "btn_paa_inspect",
+            "btn_pbo_inspect",
+            "btn_pbo_unpack",
+            "btn_dark_mode",
+            "btn_custom",
         ]
         # Apply style only to buttons that exist
         for attr_name in button_attrs:
@@ -563,7 +591,9 @@ class HemttGUI(QMainWindow):
         cursor.movePosition(cursor.MoveOperation.End)
 
         if color:
-            cursor.insertHtml(f'<span style="color: {color};">{text.replace("<", "&lt;").replace(">", "&gt;")}</span>')
+            cursor.insertHtml(
+                f'<span style="color: {color};">{text.replace("<", "&lt;").replace(">", "&gt;")}</span>'
+            )
         else:
             cursor.insertText(text)
 
@@ -649,7 +679,7 @@ class HemttGUI(QMainWindow):
                     self,
                     APP_TITLE,
                     "'hemtt' not found in PATH. Continue anyway?",
-                    QMessageBox.Yes | QMessageBox.No
+                    QMessageBox.Yes | QMessageBox.No,
                 )
                 if reply != QMessageBox.Yes:
                     return None
@@ -744,7 +774,9 @@ class HemttGUI(QMainWindow):
         # Temporarily use file dialog
         src_file, _ = QFileDialog.getOpenFileName(self, "Select source file", "", "All files (*.*)")
         if src_file:
-            dest_file, _ = QFileDialog.getSaveFileName(self, "Select destination file", "", "All files (*.*)")
+            dest_file, _ = QFileDialog.getSaveFileName(
+                self, "Select destination file", "", "All files (*.*)"
+            )
             if dest_file:
                 args = ["utils", "paa", "convert", src_file, dest_file]
                 src_dir = os.path.dirname(os.path.abspath(src_file))
@@ -762,7 +794,9 @@ class HemttGUI(QMainWindow):
         """Open PBO unpack dialog and run hemtt utils pbo unpack with selected options."""
         self._run_file_operation("PBO", "*.pbo", ["utils", "pbo", "unpack"])
 
-    def _run_file_operation(self, file_type: str, filter_pattern: str, base_args: list[str]) -> None:
+    def _run_file_operation(
+        self, file_type: str, filter_pattern: str, base_args: list[str]
+    ) -> None:
         """Helper method for file-based operations (PAA/PBO inspect/unpack).
 
         Parameters
@@ -775,10 +809,7 @@ class HemttGUI(QMainWindow):
             Base command arguments before the filename
         """
         file_path, _ = QFileDialog.getOpenFileName(
-            self,
-            f"Select {file_type} file",
-            "",
-            f"{file_type} files ({filter_pattern})"
+            self, f"Select {file_type} file", "", f"{file_type} files ({filter_pattern})"
         )
         if file_path:
             args = base_args + [file_path]
@@ -845,7 +876,7 @@ class HemttGUI(QMainWindow):
                 self,
                 APP_TITLE,
                 "A command is still running. Exit anyway?",
-                QMessageBox.Yes | QMessageBox.No
+                QMessageBox.Yes | QMessageBox.No,
             )
             if reply != QMessageBox.Yes:
                 event.ignore()
