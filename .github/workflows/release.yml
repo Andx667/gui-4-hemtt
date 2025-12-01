@@ -32,7 +32,7 @@ jobs:
 
       - name: Build executable
         run: |
-          pyinstaller HemttGUI.spec
+          pyinstaller --name HemttGUI --windowed --onefile --hidden-import=PySide6.QtCore --hidden-import=PySide6.QtGui --hidden-import=PySide6.QtWidgets --collect-submodules=PySide6 hemtt_gui.py
 
       - name: Archive artifact
         uses: actions/upload-artifact@v4
