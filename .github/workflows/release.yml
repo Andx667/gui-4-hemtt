@@ -26,13 +26,17 @@ jobs:
           pip install pyinstaller
           pip install -r requirements.txt
 
+      - name: Install UPX for compression
+        run: |
+          choco install upx -y
+
       - name: Run tests
         run: |
           python -m unittest discover -s . -p 'tests.py'
 
       - name: Build executable
         run: |
-          pyinstaller --name HemttGUI --windowed --onefile --hidden-import=PySide6.QtCore --hidden-import=PySide6.QtGui --hidden-import=PySide6.QtWidgets --collect-submodules=PySide6 hemtt_gui.py
+          pyinstaller --name HemttGUI --windowed --onefile --hidden-import=PySide6.QtCore --hidden-import=PySide6.QtGui --hidden-import=PySide6.QtWidgets --exclude-module=PySide6.QtNetwork --exclude-module=PySide6.QtWebEngineWidgets --exclude-module=PySide6.QtWebEngineCore --exclude-module=PySide6.QtQml --exclude-module=PySide6.QtQuick --exclude-module=PySide6.QtMultimedia --exclude-module=PySide6.Qt3D --exclude-module=PySide6.QtCharts --exclude-module=PySide6.QtDataVisualization --exclude-module=PySide6.QtSql --exclude-module=matplotlib --exclude-module=numpy --exclude-module=pandas --strip --upx-dir="C:\ProgramData\chocolatey\bin" hemtt_gui.py
 
       - name: Archive artifact
         uses: actions/upload-artifact@v4
