@@ -1,6 +1,6 @@
 # GUI 4 HEMTT
 
-A lightweight cross-platform (Windows-focused) Tkinter GUI wrapper for the `hemtt` CLI tool.
+A lightweight cross-platform (Windows-focused) PySide6 (Qt6) GUI wrapper for the `hemtt` CLI tool.
 
 ## Screenshot
 
@@ -35,19 +35,23 @@ Below is an example of the GUI in use (dark mode with build options visible).
 
 ## Requirements
 
-- Python 3.11+ (3.9+ may work; not tested).
+- Python 3.11+ (3.12 recommended).
 - `hemtt` installed and available in PATH, or set via browse.
-- Tkinter (ships with CPython).
+- PySide6 6.5.0+ (Qt6 framework).
 
-### Optional (for Drag & Drop)
+## Installation
 
-To enable drag-and-drop of a project folder:
+Install dependencies:
 
 ```pwsh
-pip install tkinterdnd2
+pip install -r requirements.txt
 ```
 
-If `tkinterdnd2` is not installed, the app functions normally without drag-and-drop.
+Or manually:
+
+```pwsh
+pip install PySide6>=6.5.0
+```
 
 ## Running
 
@@ -92,34 +96,39 @@ dev --just core --just weapons -v -v
 
 ## Packaging (Windows executable)
 
-Using PyInstaller to create a single-folder distribution:
+### Using VS Code Tasks (Recommended)
+
+Press `Ctrl+Shift+B` or run "Build Executable" from the Command Palette → Tasks menu.
+
+### Manual Build
+
+Using PyInstaller to create an optimized single-file executable:
 
 ```pwsh
 pip install pyinstaller
-pyinstaller --name HemttGUI --windowed --onefile hemtt_gui.py
+pyinstaller --name HemttGUI --windowed --onefile --hidden-import=PySide6.QtCore --hidden-import=PySide6.QtGui --hidden-import=PySide6.QtWidgets --exclude-module=PySide6.QtNetwork --exclude-module=PySide6.QtWebEngineWidgets --exclude-module=PySide6.QtWebEngineCore --exclude-module=PySide6.QtQml --exclude-module=PySide6.QtQuick --exclude-module=PySide6.QtMultimedia --exclude-module=PySide6.Qt3D --exclude-module=PySide6.QtCharts --exclude-module=PySide6.QtDataVisualization --exclude-module=PySide6.QtSql --exclude-module=matplotlib --exclude-module=numpy --exclude-module=pandas --strip hemtt_gui.py
 ```
 
-This will produce `dist/HemttGUI.exe`. Distribute that file along with a README if desired.
+This will produce `dist/HemttGUI.exe` (~40-50MB with optimizations).
 
-If you need to embed an icon:
-
-```pwsh
-pyinstaller --name HemttGUI --windowed --onefile --icon=icon.ico hemtt_gui.py
-```
+Note: The executable is larger than tkinter versions (~8MB) because it includes the full Qt6 framework with modern UI capabilities.
 
 ## Code Structure
 
-- `hemtt_gui.py` – Main Tkinter application.
+- `hemtt_gui.py` – Main PySide6 (Qt6) application.
 - `command_runner.py` – Background process runner & output streaming.
 - `config_store.py` – Simple JSON config persistence.
 - `tests.py` – Basic helper tests.
+- `requirements.txt` – Python dependencies.
+- `.vscode/tasks.json` – VS Code build tasks.
 
 ## GitHub Actions: Build on Release
 
 This repository includes a workflow at `.github/workflows/release.yml` that:
 
-- Builds the Windows executable with PyInstaller
-- Attaches the `HemttGUI.exe` artifact to the GitHub Release
+- Builds the Windows executable with PyInstaller (with size optimizations)
+- Uses UPX compression to reduce executable size
+- Attaches the `GUI-4-hemtt.exe` artifact to the GitHub Release
 
 Trigger it by publishing a new Release in GitHub (or run manually via the Actions tab). Ensure Actions are enabled and the default `GITHUB_TOKEN` has `contents: write` (the workflow sets this).
 
@@ -134,10 +143,10 @@ Trigger it by publishing a new Release in GitHub (or run manually via the Action
 | Issue | Fix |
 |-------|-----|
 | `hemtt` not found | Ensure it's installed or browse to executable. |
-| Drag & Drop not working | Install `tkinterdnd2` and restart app. |
+| Missing PySide6 module | Run `pip install -r requirements.txt` to install dependencies. |
 | GUI freezes | Shouldn't happen; output runs in thread. Report issue. |
 | No output until end | Some commands may buffer; run with extra verbosity (select `-v` or `-vv` in command dialog). |
-| Dialog boxes have bright borders in dark mode | Fixed in latest version. Update to current version. |
+| Buttons hard to see in dark mode | Fixed in latest version. Update to current version. |
 | Can't find HEMTT log file | Run a HEMTT command first to generate `.hemttout/latest.log`. |
 | License dialog shows none | Run without selecting a license for interactive mode. |
 

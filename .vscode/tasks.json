@@ -7,7 +7,7 @@
             "command": "${workspaceFolder}/.venv/Scripts/pyinstaller.exe",
             "args": [
                 "--name",
-                "HemttGUI",
+                "GUI-4-hemtt",
                 "--windowed",
                 "--onefile",
                 "--hidden-import=PySide6.QtCore",
@@ -72,7 +72,7 @@
             ],
             "dependsOrder": "sequence",
             "type": "shell",
-            "command": "${workspaceFolder}/dist/HemttGUI.exe",
+            "command": "${workspaceFolder}/dist/GUI-4-hemtt.exe",
             "problemMatcher": [],
             "presentation": {
                 "echo": true,

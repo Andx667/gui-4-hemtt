@@ -1,4 +1,4 @@
-name: Build and Release HemttGUI
+name: Build and Release GUI-4-hemtt
 
 on:
   release:
@@ -36,13 +36,13 @@ jobs:
 
       - name: Build executable
         run: |
-          pyinstaller --name HemttGUI --windowed --onefile --hidden-import=PySide6.QtCore --hidden-import=PySide6.QtGui --hidden-import=PySide6.QtWidgets --exclude-module=PySide6.QtNetwork --exclude-module=PySide6.QtWebEngineWidgets --exclude-module=PySide6.QtWebEngineCore --exclude-module=PySide6.QtQml --exclude-module=PySide6.QtQuick --exclude-module=PySide6.QtMultimedia --exclude-module=PySide6.Qt3D --exclude-module=PySide6.QtCharts --exclude-module=PySide6.QtDataVisualization --exclude-module=PySide6.QtSql --exclude-module=matplotlib --exclude-module=numpy --exclude-module=pandas --strip --upx-dir="C:\ProgramData\chocolatey\bin" hemtt_gui.py
+          pyinstaller --name GUI-4-hemtt --windowed --onefile --hidden-import=PySide6.QtCore --hidden-import=PySide6.QtGui --hidden-import=PySide6.QtWidgets --exclude-module=PySide6.QtNetwork --exclude-module=PySide6.QtWebEngineWidgets --exclude-module=PySide6.QtWebEngineCore --exclude-module=PySide6.QtQml --exclude-module=PySide6.QtQuick --exclude-module=PySide6.QtMultimedia --exclude-module=PySide6.Qt3D --exclude-module=PySide6.QtCharts --exclude-module=PySide6.QtDataVisualization --exclude-module=PySide6.QtSql --exclude-module=matplotlib --exclude-module=numpy --exclude-module=pandas --strip --upx-dir="C:\ProgramData\chocolatey\bin" hemtt_gui.py
 
       - name: Archive artifact
         uses: actions/upload-artifact@v4
         with:
-          name: HemttGUI-windows
-          path: dist/HemttGUI.exe
+          name: GUI-4-hemtt-windows
+          path: dist/GUI-4-hemtt.exe
 
   publish-release-assets:
     needs: build-windows
@@ -52,12 +52,12 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: HemttGUI-windows
+          name: GUI-4-hemtt-windows
           path: ./dist
 
       - name: Upload asset to release
         uses: softprops/action-gh-release@v2
         with:
-          files: ./dist/HemttGUI.exe
+          files: ./dist/GUI-4-hemtt.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
