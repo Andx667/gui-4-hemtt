@@ -1,0 +1,115 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build Executable",
+            "type": "shell",
+            "command": "${workspaceFolder}/.venv/Scripts/pyinstaller.exe",
+            "args": [
+                "--name",
+                "HemttGUI",
+                "--windowed",
+                "--onefile",
+                "--hidden-import=PySide6.QtCore",
+                "--hidden-import=PySide6.QtGui",
+                "--hidden-import=PySide6.QtWidgets",
+                "--exclude-module=PySide6.QtNetwork",
+                "--exclude-module=PySide6.QtWebEngineWidgets",
+                "--exclude-module=PySide6.QtWebEngineCore",
+                "--exclude-module=PySide6.QtQml",
+                "--exclude-module=PySide6.QtQuick",
+                "--exclude-module=PySide6.QtMultimedia",
+                "--exclude-module=PySide6.Qt3D",
+                "--exclude-module=PySide6.QtCharts",
+                "--exclude-module=PySide6.QtDataVisualization",
+                "--exclude-module=PySide6.QtSql",
+                "--exclude-module=matplotlib",
+                "--exclude-module=numpy",
+                "--exclude-module=pandas",
+                "--strip",
+                "hemtt_gui.py"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
+        },
+        {
+            "label": "Clean Build Artifacts",
+            "type": "shell",
+            "command": "Remove-Item",
+            "args": [
+                "-Path",
+                "build,dist,*.spec",
+                "-Recurse",
+                "-Force",
+                "-ErrorAction",
+                "SilentlyContinue"
+            ],
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
+        },
+        {
+            "label": "Build and Run Executable",
+            "dependsOn": [
+                "Build Executable"
+            ],
+            "dependsOrder": "sequence",
+            "type": "shell",
+            "command": "${workspaceFolder}/dist/HemttGUI.exe",
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
+        },
+        {
+            "label": "Clean and Build",
+            "dependsOn": [
+                "Clean Build Artifacts",
+                "Build Executable"
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": [],
+            "group": "build"
+        },
+        {
+            "label": "Run Application (Python)",
+            "type": "shell",
+            "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+            "args": [
+                "hemtt_gui.py"
+            ],
+            "problemMatcher": [],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
+        }
+    ]
+}
