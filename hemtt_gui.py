@@ -703,7 +703,9 @@ class HemttGUI(TkinterDnD.Tk if HAS_DND else tk.Tk):  # type: ignore[misc]
             return None
 
         # If hemtt is not an explicit path, allow PATH resolution
-        if (os.path.sep in hemtt or (os.path.altsep and os.path.altsep in hemtt)) and not os.path.isfile(hemtt):
+        if (
+            os.path.sep in hemtt or (os.path.altsep and os.path.altsep in hemtt)
+        ) and not os.path.isfile(hemtt):
             messagebox.showerror(APP_TITLE, f"HEMTT executable not found:\n{hemtt}")
             return None
         elif os.path.sep not in hemtt and (not os.path.altsep or os.path.altsep not in hemtt):
