@@ -49,20 +49,17 @@ jobs:
           mypy hemtt_gui.py command_runner.py config_store.py --ignore-missing-imports
         continue-on-error: true
 
+      - name: Install PySide6
+        run: |
+          pip install -r requirements.txt
+
       - name: Run unit tests
         run: |
-          python -m unittest discover -s . -p 'tools/tests.py'
+          python -m unittest discover -s . -p 'tests.py'
 
-      - name: Test GUI import (Linux/macOS)
-        if: runner.os != 'Windows'
+      - name: Test PySide6 import
         run: |
-          python -c "import tkinter; print('Tkinter available:', tkinter.TkVersion)"
-        continue-on-error: true
-
-      - name: Test GUI import (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          python -c "import tkinter; print('Tkinter available:', tkinter.TkVersion)"
+          python -c "from PySide6.QtWidgets import QApplication; print('PySide6 available')"
 
   lint-report:
     runs-on: ubuntu-latest
