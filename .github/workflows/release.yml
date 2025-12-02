@@ -44,7 +44,7 @@ jobs:
 
       - name: Build executable
         run: |
-          pyinstaller --name GUI-4-hemtt --windowed --onefile --noupx --icon=assets/icon.ico --hidden-import=PySide6.QtCore --hidden-import=PySide6.QtGui --hidden-import=PySide6.QtWidgets --exclude-module=PySide6.QtNetwork --exclude-module=PySide6.QtWebEngineWidgets --exclude-module=PySide6.QtWebEngineCore --exclude-module=PySide6.QtQml --exclude-module=PySide6.QtQuick --exclude-module=PySide6.QtMultimedia --exclude-module=PySide6.Qt3D --exclude-module=PySide6.QtCharts --exclude-module=PySide6.QtDataVisualization --exclude-module=PySide6.QtSql --exclude-module=matplotlib --exclude-module=numpy --exclude-module=pandas --strip hemtt_gui.py
+          pyinstaller --clean --name GUI-4-hemtt --windowed --onefile --noupx --icon=assets/icon.ico --hidden-import=PySide6.QtCore --hidden-import=PySide6.QtGui --hidden-import=PySide6.QtWidgets --exclude-module=PySide6.QtNetwork --exclude-module=PySide6.QtWebEngineWidgets --exclude-module=PySide6.QtWebEngineCore --exclude-module=PySide6.QtQml --exclude-module=PySide6.QtQuick --exclude-module=PySide6.QtMultimedia --exclude-module=PySide6.Qt3D --exclude-module=PySide6.QtCharts --exclude-module=PySide6.QtDataVisualization --exclude-module=PySide6.QtSql --exclude-module=matplotlib --exclude-module=numpy --exclude-module=pandas hemtt_gui.py
 
       - name: Verify executable
         run: |

@@ -6,10 +6,12 @@
             "type": "shell",
             "command": "${workspaceFolder}/.venv/Scripts/pyinstaller.exe",
             "args": [
+                "--clean",
                 "--name",
                 "GUI-4-hemtt",
                 "--windowed",
                 "--onefile",
+                "--noupx",
                 "--icon=assets/icon.ico",
                 "--hidden-import=PySide6.QtCore",
                 "--hidden-import=PySide6.QtGui",
@@ -27,7 +29,6 @@
                 "--exclude-module=matplotlib",
                 "--exclude-module=numpy",
                 "--exclude-module=pandas",
-                "--strip",
                 "hemtt_gui.py"
             ],
             "problemMatcher": [],
