@@ -10,6 +10,7 @@
                 "GUI-4-hemtt",
                 "--windowed",
                 "--onefile",
+                "--icon=assets/icon.ico",
                 "--hidden-import=PySide6.QtCore",
                 "--hidden-import=PySide6.QtGui",
                 "--hidden-import=PySide6.QtWidgets",

@@ -592,9 +592,12 @@ class HemttGUI(QMainWindow):
 
         if color:
             cursor.insertHtml(
-                f'<span style="color: {color};">{text.replace("<", "&lt;").replace(">", "&gt;")}</span>'
+                f'<span style="color: {color};">{text.replace("<", "&lt;").replace(">", "&gt;")}</span><br>'
             )
         else:
+            # Ensure text ends with newline if not already present
+            if not text.endswith("\n"):
+                text += "\n"
             cursor.insertText(text)
 
         self.output.setTextCursor(cursor)
