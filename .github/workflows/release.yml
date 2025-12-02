@@ -26,16 +26,13 @@ jobs:
         run: |
           python --version
           python -c "import sys; print(sys.executable)"
+          python -c "import sys; import os; print('Python DLL:', os.path.join(os.path.dirname(sys.executable), 'python' + str(sys.version_info.major) + str(sys.version_info.minor) + '.dll'))"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller pillow
           pip install -r requirements.txt
-
-      - name: Install UPX for compression
-        run: |
-          choco install upx -y
 
       - name: Run tests
         run: |
@@ -47,7 +44,7 @@ jobs:
 
       - name: Build executable
         run: |
-          pyinstaller --name GUI-4-hemtt --windowed --onefile --icon=assets/icon.ico --hidden-import=PySide6.QtCore --hidden-import=PySide6.QtGui --hidden-import=PySide6.QtWidgets --exclude-module=PySide6.QtNetwork --exclude-module=PySide6.QtWebEngineWidgets --exclude-module=PySide6.QtWebEngineCore --exclude-module=PySide6.QtQml --exclude-module=PySide6.QtQuick --exclude-module=PySide6.QtMultimedia --exclude-module=PySide6.Qt3D --exclude-module=PySide6.QtCharts --exclude-module=PySide6.QtDataVisualization --exclude-module=PySide6.QtSql --exclude-module=matplotlib --exclude-module=numpy --exclude-module=pandas --strip --upx-dir="C:\ProgramData\chocolatey\bin" hemtt_gui.py
+          pyinstaller --name GUI-4-hemtt --windowed --onefile --noupx --icon=assets/icon.ico --hidden-import=PySide6.QtCore --hidden-import=PySide6.QtGui --hidden-import=PySide6.QtWidgets --exclude-module=PySide6.QtNetwork --exclude-module=PySide6.QtWebEngineWidgets --exclude-module=PySide6.QtWebEngineCore --exclude-module=PySide6.QtQml --exclude-module=PySide6.QtQuick --exclude-module=PySide6.QtMultimedia --exclude-module=PySide6.Qt3D --exclude-module=PySide6.QtCharts --exclude-module=PySide6.QtDataVisualization --exclude-module=PySide6.QtSql --exclude-module=matplotlib --exclude-module=numpy --exclude-module=pandas --strip hemtt_gui.py
 
       - name: Verify executable
         run: |
