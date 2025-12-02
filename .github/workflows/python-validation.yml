@@ -34,7 +34,7 @@ jobs:
           python -m py_compile hemtt_gui.py
           python -m py_compile command_runner.py
           python -m py_compile config_store.py
-          python -m py_compile tests.py
+          python -m py_compile tools/tests.py
 
       - name: Lint with flake8
         run: |
@@ -51,7 +51,7 @@ jobs:
 
       - name: Run unit tests
         run: |
-          python -m unittest discover -s . -p 'tests.py'
+          python -m unittest discover -s . -p 'tools/tests.py'
 
       - name: Test GUI import (Linux/macOS)
         if: runner.os != 'Windows'
