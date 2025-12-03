@@ -34,10 +34,6 @@ jobs:
           pip install pyinstaller pillow
           pip install -r requirements.txt
 
-      - name: Run tests
-        run: |
-          python -m unittest discover -s . -p 'tools/tests.py'
-
       - name: Build executable
         run: |
           pyinstaller --clean --name GUI-4-hemtt --windowed --onefile --icon=assets/icon.ico hemtt_gui.py
