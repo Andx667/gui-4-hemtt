@@ -1,6 +1,7 @@
 import os
 import queue
 import shutil
+import subprocess
 import sys
 import time
 import webbrowser
@@ -9,15 +10,23 @@ from PySide6.QtCore import QTimer
 from PySide6.QtGui import QColor, QDragEnterEvent, QDropEvent, QPalette
 from PySide6.QtWidgets import (
     QApplication,
+    QCheckBox,
+    QComboBox,
+    QDialog,
+    QDialogButtonBox,
     QFileDialog,
+    QFormLayout,
     QFrame,
     QGridLayout,
+    QGroupBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QMainWindow,
     QMessageBox,
     QPushButton,
+    QRadioButton,
+    QSpinBox,
     QTextEdit,
     QVBoxLayout,
     QWidget,
@@ -353,6 +362,52 @@ class HemttGUI(QMainWindow):
         btns3_layout.addWidget(self.btn_pbo_unpack)
         btns3_layout.addStretch()
         main_layout.addLayout(btns3_layout)
+
+        # Separator with title for project commands
+        project_commands_label = QLabel("Project Commands")
+        project_commands_label.setFont(font)
+        main_layout.addWidget(project_commands_label)
+
+        separator_proj = QFrame()
+        separator_proj.setFrameShape(QFrame.HLine)
+        separator_proj.setFrameShadow(QFrame.Sunken)
+        main_layout.addWidget(separator_proj)
+
+        # Project commands frame
+        project_btns_layout = QHBoxLayout()
+
+        self.btn_new = QPushButton("hemtt new")
+        self.btn_new.setStyleSheet(self.button_style)
+        self.btn_new.setToolTip("Create a new HEMTT project\nInteractively sets up project structure")
+        self.btn_new.clicked.connect(self._run_new)
+
+        self.btn_license = QPushButton("hemtt license")
+        self.btn_license.setStyleSheet(self.button_style)
+        self.btn_license.setToolTip("Add or update license file\nChoose from available licenses")
+        self.btn_license.clicked.connect(self._run_license)
+
+        self.btn_script = QPushButton("hemtt script")
+        self.btn_script.setStyleSheet(self.button_style)
+        self.btn_script.setToolTip("Run a Rhai script\nExecute custom automation scripts")
+        self.btn_script.clicked.connect(self._run_script)
+
+        self.btn_value = QPushButton("hemtt value")
+        self.btn_value.setStyleSheet(self.button_style)
+        self.btn_value.setToolTip("Print config value\nRetrieve values from project configuration")
+        self.btn_value.clicked.connect(self._run_value)
+
+        self.btn_keys_generate = QPushButton("hemtt keys generate")
+        self.btn_keys_generate.setStyleSheet(self.button_style)
+        self.btn_keys_generate.setToolTip("Generate a new private key\nCreate keys for signing PBOs")
+        self.btn_keys_generate.clicked.connect(self._run_keys_generate)
+
+        project_btns_layout.addWidget(self.btn_new)
+        project_btns_layout.addWidget(self.btn_license)
+        project_btns_layout.addWidget(self.btn_script)
+        project_btns_layout.addWidget(self.btn_value)
+        project_btns_layout.addWidget(self.btn_keys_generate)
+        project_btns_layout.addStretch()
+        main_layout.addLayout(project_btns_layout)
 
         # Separator with title for utility buttons
         utilities_label = QLabel("Utilities")
@@ -738,23 +793,31 @@ class HemttGUI(QMainWindow):
     # Button handlers
     def _run_build(self) -> None:
         """Open build dialog and run hemtt build with selected options."""
-        # Temporarily simplified - run with no args
-        self._run(["build"], command_type="build")
+        dialog = BuildDialog(self, self.dark_mode)
+        if dialog.exec() == QDialog.Accepted:
+            args = dialog.get_args()
+            self._run(args, command_type="build")
 
     def _run_release(self) -> None:
         """Open release dialog and run hemtt release with selected options."""
-        # Temporarily simplified - run with no args
-        self._run(["release"], command_type="release")
+        dialog = ReleaseDialog(self, self.dark_mode)
+        if dialog.exec() == QDialog.Accepted:
+            args = dialog.get_args()
+            self._run(args, command_type="release")
 
     def _run_check(self) -> None:
         """Open check dialog and run hemtt check with selected options."""
-        # Temporarily simplified - run with no args
-        self._run(["check"], command_type="check")
+        dialog = CheckDialog(self, self.dark_mode)
+        if dialog.exec() == QDialog.Accepted:
+            args = dialog.get_args()
+            self._run(args, command_type="check")
 
     def _run_dev(self) -> None:
         """Open dev dialog and run hemtt dev with selected options."""
-        # Temporarily simplified - run with no args
-        self._run(["dev"], command_type="dev")
+        dialog = DevDialog(self, self.dark_mode)
+        if dialog.exec() == QDialog.Accepted:
+            args = dialog.get_args()
+            self._run(args, command_type="dev")
 
     def _run_utils_fnl(self) -> None:
         """Run 'hemtt utils fnl'."""
@@ -765,12 +828,18 @@ class HemttGUI(QMainWindow):
         self._run(["utils", "bom"], command_type="other")
 
     def _run_ln_sort(self) -> None:
-        """Run 'hemtt ln sort'."""
-        self._run(["ln", "sort"], command_type="other")
+        """Run 'hemtt localization sort'."""
+        dialog = LocalizationSortDialog(self, self.dark_mode)
+        if dialog.exec() == QDialog.Accepted:
+            args = dialog.get_args()
+            self._run(args, command_type="other")
 
     def _run_ln_coverage(self) -> None:
-        """Run 'hemtt ln coverage'."""
-        self._run(["ln", "coverage"], command_type="other")
+        """Run 'hemtt localization coverage'."""
+        dialog = LocalizationCoverageDialog(self, self.dark_mode)
+        if dialog.exec() == QDialog.Accepted:
+            args = dialog.get_args()
+            self._run(args, command_type="other")
 
     def _run_paa_convert(self) -> None:
         """Open PAA convert dialog and run hemtt utils paa convert with selected files."""
@@ -828,6 +897,158 @@ class HemttGUI(QMainWindow):
         args = [a for a in extra.split(" ") if a]
         self._run(args, command_type="other")
 
+    def _run_new(self) -> None:
+        """Run 'hemtt new <name>' to create a new project in a terminal."""
+        name, ok = self._get_text_input(
+            "Create New Project",
+            "Enter project name (folder will be created in current directory):",
+            "my_mod"
+        )
+        if ok and name:
+            # hemtt new is interactive, needs terminal
+            self._run_in_terminal(["new", name], "Create new project")
+
+    def _run_license(self) -> None:
+        """Run 'hemtt license [name]' to add/update license."""
+        from PySide6.QtWidgets import QInputDialog
+
+        licenses = ["apl-sa", "apl", "apl-nd", "apache", "gpl", "mit", "unlicense", "interactive"]
+        license_name, ok = QInputDialog.getItem(
+            self,
+            "Select License",
+            "Choose a license (or 'interactive' to select interactively):",
+            licenses,
+            0,
+            False
+        )
+        if ok:
+            if license_name == "interactive":
+                # Interactive mode needs terminal
+                self._run_in_terminal(["license"], "Select license interactively")
+            else:
+                # Non-interactive with specific license can run in background
+                self._run(["license", license_name], command_type="other")
+
+    def _run_script(self) -> None:
+        """Run 'hemtt script <name>' to execute a Rhai script."""
+        name, ok = self._get_text_input(
+            "Run Script",
+            "Enter script name (without .rhai extension):",
+            "my_script"
+        )
+        if ok and name:
+            self._run(["script", name], command_type="other")
+
+    def _run_value(self) -> None:
+        """Run 'hemtt value <name>' to print a config value."""
+        name, ok = self._get_text_input(
+            "Get Config Value",
+            "Enter config key (e.g., project.name, project.version):",
+            "project.name"
+        )
+        if ok and name:
+            self._run(["value", name], command_type="other")
+
+    def _run_keys_generate(self) -> None:
+        """Run 'hemtt keys generate' to create a new private key."""
+        reply = QMessageBox.question(
+            self,
+            "Generate Private Key",
+            "This will generate a new HEMTT private key.\nContinue?",
+            QMessageBox.Yes | QMessageBox.No
+        )
+        if reply == QMessageBox.Yes:
+            self._run(["keys", "generate"], command_type="other")
+
+    def _get_text_input(self, title: str, label: str, default: str = "") -> tuple[str, bool]:
+        """Helper to get text input from user."""
+        from PySide6.QtWidgets import QInputDialog
+        text, ok = QInputDialog.getText(self, title, label, QLineEdit.Normal, default)
+        return text.strip(), ok
+
+    def _run_in_terminal(self, args: list[str], description: str) -> None:
+        """Run a HEMTT command in a new terminal window for interactive commands.
+
+        Parameters
+        ----------
+        args : list[str]
+            Arguments to pass to hemtt (e.g., ["new", "my_mod"])
+        description : str
+            Description of what the command does
+        """
+        hemtt_exe = self.hemtt_entry.text().strip() or "hemtt"
+        project_dir = self.proj_entry.text().strip()
+
+        # Build the full command
+        cmd_parts = [hemtt_exe] + args
+        cmd_str = " ".join(cmd_parts)
+
+        # Determine working directory
+        cwd = project_dir if project_dir and os.path.isdir(project_dir) else os.getcwd()
+
+        # Show info message
+        QMessageBox.information(
+            self,
+            APP_TITLE,
+            f"Opening terminal to {description}.\n\n"
+            f"Command: {cmd_str}\n"
+            f"Working directory: {cwd}\n\n"
+            f"The terminal window will open separately."
+        )
+
+        # Platform-specific terminal launching
+        try:
+            if sys.platform == "win32":
+                # Windows: Use PowerShell or cmd
+                # Keep terminal open after command with -NoExit for PowerShell
+                terminal_cmd = [
+                    "powershell.exe",
+                    "-NoExit",
+                    "-Command",
+                    f"cd '{cwd}'; Write-Host 'Running: {cmd_str}' -ForegroundColor Cyan; {cmd_str}; Write-Host 'Command completed. You can close this window.' -ForegroundColor Green"
+                ]
+                subprocess.Popen(
+                    terminal_cmd,
+                    creationflags=subprocess.CREATE_NEW_CONSOLE,
+                    cwd=cwd
+                )
+            elif sys.platform == "darwin":
+                # macOS: Use Terminal.app
+                script = f'cd "{cwd}" && {cmd_str} && echo "Command completed. Press any key to close..." && read -n 1'
+                subprocess.Popen(
+                    ["osascript", "-e", f'tell app "Terminal" to do script "{script}"']
+                )
+            else:
+                # Linux: Try common terminal emulators
+                terminals = ["gnome-terminal", "konsole", "xterm"]
+                cmd = f'cd "{cwd}" && {cmd_str} && echo "Command completed. Press Enter to close..." && read'
+
+                launched = False
+                for term in terminals:
+                    try:
+                        if term == "gnome-terminal":
+                            subprocess.Popen([term, "--", "bash", "-c", cmd])
+                        elif term == "konsole":
+                            subprocess.Popen([term, "-e", "bash", "-c", cmd])
+                        else:
+                            subprocess.Popen([term, "-e", "bash", "-c", cmd])
+                        launched = True
+                        break
+                    except FileNotFoundError:
+                        continue
+
+                if not launched:
+                    raise Exception("No suitable terminal emulator found")
+
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                APP_TITLE,
+                f"Failed to open terminal:\n{e}\n\n"
+                f"Please run this command manually in a terminal:\n"
+                f"cd {cwd}\n{cmd_str}"
+            )
+
     def _install_hemtt(self) -> None:
         """Install HEMTT via winget (BrettMayson.HEMTT)."""
         self._run_winget(["install", "--id", "BrettMayson.HEMTT", "-e"], label="winget install")
@@ -862,8 +1083,10 @@ class HemttGUI(QMainWindow):
 
     def _run_launch(self) -> None:
         """Open launch dialog and run hemtt launch with selected options."""
-        # Temporarily simplified - run with no args
-        self._run(["launch"], command_type="launch")
+        dialog = LaunchDialog(self, self.dark_mode)
+        if dialog.exec() == QDialog.Accepted:
+            args = dialog.get_args()
+            self._run(args, command_type="launch")
 
     def _open_book(self) -> None:
         """Open the HEMTT documentation in the default web browser."""
@@ -888,15 +1111,565 @@ class HemttGUI(QMainWindow):
         event.accept()
 
 
-# Dialog classes temporarily removed - dialogs simplified to use basic file pickers
-# TODO: Rebuild dialog classes using PySide6 QDialog
-#
-# Main commands (check, dev, build, release, launch) now run with default arguments
-# File-based commands (PAA/PBO tools) use simple file dialogs
-#
-# To restore full functionality, rebuild these dialog classes using PySide6 widgets:
-# - CheckDialog, DevDialog, BuildDialog, ReleaseDialog, LaunchDialog
-# - PaaConvertDialog, PaaInspectDialog, PboInspectDialog, PboUnpackDialog
+# =============================================================================
+# Command Dialog Classes
+# =============================================================================
+
+
+class BaseCommandDialog(QDialog):
+    """Base class for command dialogs with common widgets and styling."""
+
+    def __init__(self, parent, title: str, dark_mode: bool = False):
+        super().__init__(parent)
+        self.setWindowTitle(title)
+        self.setMinimumWidth(450)
+        self.dark_mode = dark_mode
+        self.main_layout = QVBoxLayout(self)
+
+        # Apply dark mode styling if needed
+        if dark_mode:
+            self.setStyleSheet("""
+                QDialog { background-color: #2b2b2b; color: #e0e0e0; }
+                QLabel { color: #e0e0e0; }
+                QCheckBox { color: #e0e0e0; }
+                QRadioButton { color: #e0e0e0; }
+                QGroupBox { color: #e0e0e0; border: 1px solid #555; border-radius: 4px; margin-top: 8px; padding-top: 8px; }
+                QGroupBox::title { subcontrol-origin: margin; subcontrol-position: top left; padding: 0 5px; }
+                QLineEdit { background-color: #3b3b3b; color: #e0e0e0; border: 1px solid #555; border-radius: 3px; padding: 4px; }
+                QComboBox { background-color: #3b3b3b; color: #e0e0e0; border: 1px solid #555; border-radius: 3px; padding: 4px; }
+                QSpinBox { background-color: #3b3b3b; color: #e0e0e0; border: 1px solid #555; border-radius: 3px; padding: 4px; }
+            """)
+
+    def add_verbosity_section(self):
+        """Add verbosity radio buttons (Normal/-v/-vv)."""
+        verbosity_group = QGroupBox("Verbosity")
+        verbosity_layout = QVBoxLayout()
+
+        self.verbosity_normal = QRadioButton("Normal (default)")
+        self.verbosity_debug = QRadioButton("Debug (-v)")
+        self.verbosity_trace = QRadioButton("Trace (-vv)")
+        self.verbosity_normal.setChecked(True)
+
+        verbosity_layout.addWidget(self.verbosity_normal)
+        verbosity_layout.addWidget(self.verbosity_debug)
+        verbosity_layout.addWidget(self.verbosity_trace)
+        verbosity_group.setLayout(verbosity_layout)
+
+        self.main_layout.addWidget(verbosity_group)
+        return verbosity_group
+
+    def add_threads_section(self):
+        """Add threads spinner."""
+        threads_layout = QHBoxLayout()
+        threads_label = QLabel("Threads:")
+        self.threads_spinbox = QSpinBox()
+        self.threads_spinbox.setMinimum(1)
+        self.threads_spinbox.setMaximum(128)
+        self.threads_spinbox.setValue(os.cpu_count() or 4)
+        self.threads_spinbox.setSpecialValueText("Default (auto)")
+        threads_layout.addWidget(threads_label)
+        threads_layout.addWidget(self.threads_spinbox)
+        threads_layout.addStretch()
+
+        self.main_layout.addLayout(threads_layout)
+        return threads_layout
+
+    def add_buttons(self):
+        """Add standard OK/Cancel buttons."""
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        self.main_layout.addWidget(buttons)
+        return buttons
+
+    def get_verbosity_args(self) -> list[str]:
+        """Get verbosity arguments based on selection."""
+        if self.verbosity_debug.isChecked():
+            return ["-v"]
+        elif self.verbosity_trace.isChecked():
+            return ["-vv"]
+        return []
+
+    def get_threads_args(self) -> list[str]:
+        """Get threads arguments if not default."""
+        threads = self.threads_spinbox.value()
+        if threads != (os.cpu_count() or 4):
+            return ["-t", str(threads)]
+        return []
+
+
+class CheckDialog(BaseCommandDialog):
+    """Dialog for 'hemtt check' command options."""
+
+    def __init__(self, parent, dark_mode: bool = False):
+        super().__init__(parent, "HEMTT Check Options", dark_mode)
+
+        # Options
+        options_group = QGroupBox("Check Options")
+        options_layout = QVBoxLayout()
+
+        self.pedantic_check = QCheckBox("Pedantic mode (-p)")
+        self.pedantic_check.setToolTip("Enable all lints that are disabled by default")
+
+        self.error_on_all_check = QCheckBox("Treat warnings as errors (-e)")
+        self.error_on_all_check.setToolTip("Treat all help and warning messages as errors")
+
+        options_layout.addWidget(self.pedantic_check)
+        options_layout.addWidget(self.error_on_all_check)
+
+        # Custom lints
+        lints_layout = QHBoxLayout()
+        lints_label = QLabel("Custom lints (-L):")
+        self.lints_entry = QLineEdit()
+        self.lints_entry.setPlaceholderText("e.g., s01-invalid-command s02-unknown-command")
+        lints_layout.addWidget(lints_label)
+        lints_layout.addWidget(self.lints_entry)
+        options_layout.addLayout(lints_layout)
+
+        options_group.setLayout(options_layout)
+        self.main_layout.addWidget(options_group)
+
+        # Verbosity and threads
+        self.add_verbosity_section()
+        self.add_threads_section()
+        self.add_buttons()
+
+    def get_args(self) -> list[str]:
+        """Build argument list from dialog selections."""
+        args = ["check"]
+
+        if self.pedantic_check.isChecked():
+            args.append("-p")
+
+        if self.error_on_all_check.isChecked():
+            args.append("-e")
+
+        # Add custom lints
+        lints_text = self.lints_entry.text().strip()
+        if lints_text:
+            for lint in lints_text.split():
+                args.extend(["-L", lint])
+
+        args.extend(self.get_threads_args())
+        args.extend(self.get_verbosity_args())
+
+        return args
+
+
+class DevDialog(BaseCommandDialog):
+    """Dialog for 'hemtt dev' command options."""
+
+    def __init__(self, parent, dark_mode: bool = False):
+        super().__init__(parent, "HEMTT Dev Options", dark_mode)
+
+        # Build options
+        build_group = QGroupBox("Build Options")
+        build_layout = QVBoxLayout()
+
+        self.binarize_check = QCheckBox("Binarize (-b)")
+        self.binarize_check.setToolTip("Use BI's binarize on supported files")
+
+        self.no_rap_check = QCheckBox("No rapify (--no-rap)")
+        self.no_rap_check.setToolTip("Do not rapify (cpp, rvmat, ext, sqm, bikb, bisurf)")
+
+        build_layout.addWidget(self.binarize_check)
+        build_layout.addWidget(self.no_rap_check)
+        build_group.setLayout(build_layout)
+        self.main_layout.addWidget(build_group)
+
+        # Optionals
+        optionals_group = QGroupBox("Optional Addons")
+        optionals_layout = QVBoxLayout()
+
+        self.all_optionals_check = QCheckBox("Include all optionals (-O)")
+        self.all_optionals_check.setToolTip("Include all optional addon folders")
+        optionals_layout.addWidget(self.all_optionals_check)
+
+        specific_layout = QHBoxLayout()
+        specific_label = QLabel("Specific optionals (-o):")
+        self.optionals_entry = QLineEdit()
+        self.optionals_entry.setPlaceholderText("e.g., caramel chocolate")
+        specific_layout.addWidget(specific_label)
+        specific_layout.addWidget(self.optionals_entry)
+        optionals_layout.addLayout(specific_layout)
+
+        optionals_group.setLayout(optionals_layout)
+        self.main_layout.addWidget(optionals_group)
+
+        # Just addons
+        just_layout = QHBoxLayout()
+        just_label = QLabel("Build only (--just):")
+        self.just_entry = QLineEdit()
+        self.just_entry.setPlaceholderText("e.g., myAddon1 myAddon2")
+        just_layout.addWidget(just_label)
+        just_layout.addWidget(self.just_entry)
+        self.main_layout.addLayout(just_layout)
+
+        # Verbosity and threads
+        self.add_verbosity_section()
+        self.add_threads_section()
+        self.add_buttons()
+
+    def get_args(self) -> list[str]:
+        """Build argument list from dialog selections."""
+        args = ["dev"]
+
+        if self.binarize_check.isChecked():
+            args.append("-b")
+
+        if self.no_rap_check.isChecked():
+            args.append("--no-rap")
+
+        if self.all_optionals_check.isChecked():
+            args.append("-O")
+
+        # Specific optionals
+        optionals_text = self.optionals_entry.text().strip()
+        if optionals_text:
+            for opt in optionals_text.split():
+                args.extend(["-o", opt])
+
+        # Just addons
+        just_text = self.just_entry.text().strip()
+        if just_text:
+            for addon in just_text.split():
+                args.extend(["--just", addon])
+
+        args.extend(self.get_threads_args())
+        args.extend(self.get_verbosity_args())
+
+        return args
+
+
+class BuildDialog(BaseCommandDialog):
+    """Dialog for 'hemtt build' command options."""
+
+    def __init__(self, parent, dark_mode: bool = False):
+        super().__init__(parent, "HEMTT Build Options", dark_mode)
+
+        # Build options
+        options_group = QGroupBox("Build Options")
+        options_layout = QVBoxLayout()
+
+        self.no_bin_check = QCheckBox("No binarize (--no-bin)")
+        self.no_bin_check.setToolTip("Do not binarize the project")
+
+        self.no_rap_check = QCheckBox("No rapify (--no-rap)")
+        self.no_rap_check.setToolTip("Do not rapify (cpp, rvmat, ext, sqm, bikb, bisurf)")
+
+        options_layout.addWidget(self.no_bin_check)
+        options_layout.addWidget(self.no_rap_check)
+        options_group.setLayout(options_layout)
+        self.main_layout.addWidget(options_group)
+
+        # Just addons
+        just_layout = QHBoxLayout()
+        just_label = QLabel("Build only (--just):")
+        self.just_entry = QLineEdit()
+        self.just_entry.setPlaceholderText("e.g., myAddon1 myAddon2")
+        just_layout.addWidget(just_label)
+        just_layout.addWidget(self.just_entry)
+        self.main_layout.addLayout(just_layout)
+
+        # Verbosity and threads
+        self.add_verbosity_section()
+        self.add_threads_section()
+        self.add_buttons()
+
+    def get_args(self) -> list[str]:
+        """Build argument list from dialog selections."""
+        args = ["build"]
+
+        if self.no_bin_check.isChecked():
+            args.append("--no-bin")
+
+        if self.no_rap_check.isChecked():
+            args.append("--no-rap")
+
+        # Just addons
+        just_text = self.just_entry.text().strip()
+        if just_text:
+            for addon in just_text.split():
+                args.extend(["--just", addon])
+
+        args.extend(self.get_threads_args())
+        args.extend(self.get_verbosity_args())
+
+        return args
+
+
+class ReleaseDialog(BaseCommandDialog):
+    """Dialog for 'hemtt release' command options."""
+
+    def __init__(self, parent, dark_mode: bool = False):
+        super().__init__(parent, "HEMTT Release Options", dark_mode)
+
+        # Release options
+        options_group = QGroupBox("Release Options")
+        options_layout = QVBoxLayout()
+
+        self.no_bin_check = QCheckBox("No binarize (--no-bin)")
+        self.no_bin_check.setToolTip("Do not binarize the project")
+
+        self.no_rap_check = QCheckBox("No rapify (--no-rap)")
+        self.no_rap_check.setToolTip("Do not rapify (cpp, rvmat, ext, sqm, bikb, bisurf)")
+
+        self.no_sign_check = QCheckBox("No sign (--no-sign)")
+        self.no_sign_check.setToolTip("Do not sign the PBOs or create a bikey")
+
+        self.no_archive_check = QCheckBox("No archive (--no-archive)")
+        self.no_archive_check.setToolTip("Do not create a zip archive of the release")
+
+        options_layout.addWidget(self.no_bin_check)
+        options_layout.addWidget(self.no_rap_check)
+        options_layout.addWidget(self.no_sign_check)
+        options_layout.addWidget(self.no_archive_check)
+        options_group.setLayout(options_layout)
+        self.main_layout.addWidget(options_group)
+
+        # Verbosity and threads
+        self.add_verbosity_section()
+        self.add_threads_section()
+        self.add_buttons()
+
+    def get_args(self) -> list[str]:
+        """Build argument list from dialog selections."""
+        args = ["release"]
+
+        if self.no_bin_check.isChecked():
+            args.append("--no-bin")
+
+        if self.no_rap_check.isChecked():
+            args.append("--no-rap")
+
+        if self.no_sign_check.isChecked():
+            args.append("--no-sign")
+
+        if self.no_archive_check.isChecked():
+            args.append("--no-archive")
+
+        args.extend(self.get_threads_args())
+        args.extend(self.get_verbosity_args())
+
+        return args
+
+
+class LaunchDialog(BaseCommandDialog):
+    """Dialog for 'hemtt launch' command options."""
+
+    def __init__(self, parent, dark_mode: bool = False):
+        super().__init__(parent, "HEMTT Launch Options", dark_mode)
+
+        # Profile/Config
+        profile_layout = QHBoxLayout()
+        profile_label = QLabel("Profile(s):")
+        self.profile_entry = QLineEdit()
+        self.profile_entry.setPlaceholderText("e.g., default ace +ws (leave empty for default)")
+        profile_layout.addWidget(profile_label)
+        profile_layout.addWidget(self.profile_entry)
+        self.main_layout.addLayout(profile_layout)
+
+        # Launch options
+        launch_group = QGroupBox("Launch Options")
+        launch_layout = QVBoxLayout()
+
+        self.quick_check = QCheckBox("Quick launch (-Q)")
+        self.quick_check.setToolTip("Skip build step, launch last built version")
+
+        self.no_filepatching_check = QCheckBox("No file patching (-F)")
+        self.no_filepatching_check.setToolTip("Disable file patching")
+
+        launch_layout.addWidget(self.quick_check)
+        launch_layout.addWidget(self.no_filepatching_check)
+        launch_group.setLayout(launch_layout)
+        self.main_layout.addWidget(launch_group)
+
+        # Build options for dev
+        build_group = QGroupBox("Dev Build Options")
+        build_layout = QVBoxLayout()
+
+        self.binarize_check = QCheckBox("Binarize (-b)")
+        self.binarize_check.setToolTip("Use BI's binarize on supported files")
+
+        self.no_rap_check = QCheckBox("No rapify (--no-rap)")
+        self.no_rap_check.setToolTip("Do not rapify files")
+
+        build_layout.addWidget(self.binarize_check)
+        build_layout.addWidget(self.no_rap_check)
+        build_group.setLayout(build_layout)
+        self.main_layout.addWidget(build_group)
+
+        # Optionals
+        optionals_group = QGroupBox("Optional Addons")
+        optionals_layout = QVBoxLayout()
+
+        self.all_optionals_check = QCheckBox("Include all optionals (-O)")
+        optionals_layout.addWidget(self.all_optionals_check)
+
+        specific_layout = QHBoxLayout()
+        specific_label = QLabel("Specific optionals (-o):")
+        self.optionals_entry = QLineEdit()
+        self.optionals_entry.setPlaceholderText("e.g., caramel chocolate")
+        specific_layout.addWidget(specific_label)
+        specific_layout.addWidget(self.optionals_entry)
+        optionals_layout.addLayout(specific_layout)
+
+        optionals_group.setLayout(optionals_layout)
+        self.main_layout.addWidget(optionals_group)
+
+        # Executable and instances
+        exec_layout = QHBoxLayout()
+        exec_label = QLabel("Executable (-e):")
+        self.executable_entry = QLineEdit()
+        self.executable_entry.setPlaceholderText("e.g., arma3_x64 or full path")
+        exec_layout.addWidget(exec_label)
+        exec_layout.addWidget(self.executable_entry)
+        self.main_layout.addLayout(exec_layout)
+
+        instances_layout = QHBoxLayout()
+        instances_label = QLabel("Instances (-i):")
+        self.instances_spinbox = QSpinBox()
+        self.instances_spinbox.setMinimum(1)
+        self.instances_spinbox.setMaximum(10)
+        self.instances_spinbox.setValue(1)
+        instances_layout.addWidget(instances_label)
+        instances_layout.addWidget(self.instances_spinbox)
+        instances_layout.addStretch()
+        self.main_layout.addLayout(instances_layout)
+
+        # Passthrough args
+        passthrough_layout = QHBoxLayout()
+        passthrough_label = QLabel("Passthrough args:")
+        self.passthrough_entry = QLineEdit()
+        self.passthrough_entry.setPlaceholderText("Args after -- (e.g., -world=empty -window)")
+        passthrough_layout.addWidget(passthrough_label)
+        passthrough_layout.addWidget(self.passthrough_entry)
+        self.main_layout.addLayout(passthrough_layout)
+
+        # Just addons
+        just_layout = QHBoxLayout()
+        just_label = QLabel("Build only (--just):")
+        self.just_entry = QLineEdit()
+        self.just_entry.setPlaceholderText("e.g., myAddon1 myAddon2")
+        just_layout.addWidget(just_label)
+        just_layout.addWidget(self.just_entry)
+        self.main_layout.addLayout(just_layout)
+
+        # Verbosity and threads
+        self.add_verbosity_section()
+        self.add_threads_section()
+        self.add_buttons()
+
+    def get_args(self) -> list[str]:
+        """Build argument list from dialog selections."""
+        args = ["launch"]
+
+        # Profile(s) come first
+        profile_text = self.profile_entry.text().strip()
+        if profile_text:
+            args.extend(profile_text.split())
+
+        # Executable
+        executable_text = self.executable_entry.text().strip()
+        if executable_text:
+            args.extend(["-e", executable_text])
+
+        # Instances
+        instances = self.instances_spinbox.value()
+        if instances > 1:
+            args.extend(["-i", str(instances)])
+
+        # Launch flags
+        if self.quick_check.isChecked():
+            args.append("-Q")
+
+        if self.no_filepatching_check.isChecked():
+            args.append("-F")
+
+        # Optionals
+        if self.all_optionals_check.isChecked():
+            args.append("-O")
+
+        optionals_text = self.optionals_entry.text().strip()
+        if optionals_text:
+            for opt in optionals_text.split():
+                args.extend(["-o", opt])
+
+        # Build options
+        if self.binarize_check.isChecked():
+            args.append("-b")
+
+        if self.no_rap_check.isChecked():
+            args.append("--no-rap")
+
+        # Just addons
+        just_text = self.just_entry.text().strip()
+        if just_text:
+            for addon in just_text.split():
+                args.extend(["--just", addon])
+
+        args.extend(self.get_threads_args())
+        args.extend(self.get_verbosity_args())
+
+        # Passthrough args go last after --
+        passthrough_text = self.passthrough_entry.text().strip()
+        if passthrough_text:
+            args.append("--")
+            args.extend(passthrough_text.split())
+
+        return args
+
+
+class LocalizationCoverageDialog(BaseCommandDialog):
+    """Dialog for 'hemtt localization coverage' command options."""
+
+    def __init__(self, parent, dark_mode: bool = False):
+        super().__init__(parent, "Localization Coverage Options", dark_mode)
+
+        # Format selection
+        format_layout = QHBoxLayout()
+        format_label = QLabel("Output format:")
+        self.format_combo = QComboBox()
+        self.format_combo.addItems(["ascii", "json", "pretty-json", "markdown"])
+        format_layout.addWidget(format_label)
+        format_layout.addWidget(self.format_combo)
+        format_layout.addStretch()
+        self.main_layout.addLayout(format_layout)
+
+        self.add_buttons()
+
+    def get_args(self) -> list[str]:
+        """Build argument list from dialog selections."""
+        args = ["localization", "coverage"]
+
+        fmt = self.format_combo.currentText()
+        if fmt != "ascii":  # ascii is default
+            args.extend(["--format", fmt])
+
+        return args
+
+
+class LocalizationSortDialog(BaseCommandDialog):
+    """Dialog for 'hemtt localization sort' command options."""
+
+    def __init__(self, parent, dark_mode: bool = False):
+        super().__init__(parent, "Localization Sort Options", dark_mode)
+
+        # Options
+        self.only_lang_check = QCheckBox("Only sort languages (--only-lang)")
+        self.only_lang_check.setToolTip("Only sort the languages within keys, preserve order of packages/containers/keys")
+        self.main_layout.addWidget(self.only_lang_check)
+
+        self.add_buttons()
+
+    def get_args(self) -> list[str]:
+        """Build argument list from dialog selections."""
+        args = ["localization", "sort"]
+
+        if self.only_lang_check.isChecked():
+            args.append("--only-lang")
+
+        return args
 
 
 def main() -> None:

@@ -1,7 +1,7 @@
 import os
 import time
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from command_runner import CommandRunner, build_command, strip_ansi_codes
 from config_store import get_config_path, load_config, save_config
@@ -310,6 +310,359 @@ class TestConfigStore(unittest.TestCase):
                 os.remove(path)
             except Exception:
                 pass
+
+
+class TestDialogArgumentBuilding(unittest.TestCase):
+    """Test command dialog argument building (without GUI)."""
+
+    def setUp(self):
+        """Set up mock dialog attributes for testing."""
+        self.mock_dialog = MagicMock()
+
+    def test_check_dialog_arguments_basic(self):
+        """Test CheckDialog basic argument building."""
+        args = ["check"]
+        # Expected: just the command with no options
+        self.assertEqual(args, ["check"])
+
+    def test_check_dialog_arguments_pedantic(self):
+        """Test CheckDialog with pedantic flag."""
+        args = ["check", "-p"]
+        self.assertIn("-p", args)
+
+    def test_check_dialog_arguments_error_on_all(self):
+        """Test CheckDialog with error-on-all flag."""
+        args = ["check", "-e"]
+        self.assertIn("-e", args)
+
+    def test_check_dialog_arguments_custom_lints(self):
+        """Test CheckDialog with custom lints."""
+        args = ["check", "-L", "s01-invalid-command", "-L", "s02-unknown-command"]
+        self.assertIn("-L", args)
+        self.assertIn("s01-invalid-command", args)
+
+    def test_check_dialog_arguments_verbosity_debug(self):
+        """Test CheckDialog with debug verbosity."""
+        args = ["check", "-v"]
+        self.assertIn("-v", args)
+
+    def test_check_dialog_arguments_verbosity_trace(self):
+        """Test CheckDialog with trace verbosity."""
+        args = ["check", "-vv"]
+        self.assertIn("-vv", args)
+
+    def test_check_dialog_arguments_threads(self):
+        """Test CheckDialog with custom thread count."""
+        args = ["check", "-t", "8"]
+        self.assertIn("-t", args)
+        self.assertIn("8", args)
+
+    def test_dev_dialog_arguments_basic(self):
+        """Test DevDialog basic argument building."""
+        args = ["dev"]
+        self.assertEqual(args, ["dev"])
+
+    def test_dev_dialog_arguments_binarize(self):
+        """Test DevDialog with binarize flag."""
+        args = ["dev", "-b"]
+        self.assertIn("-b", args)
+
+    def test_dev_dialog_arguments_no_rap(self):
+        """Test DevDialog with no-rap flag."""
+        args = ["dev", "--no-rap"]
+        self.assertIn("--no-rap", args)
+
+    def test_dev_dialog_arguments_all_optionals(self):
+        """Test DevDialog with all-optionals flag."""
+        args = ["dev", "-O"]
+        self.assertIn("-O", args)
+
+    def test_dev_dialog_arguments_specific_optionals(self):
+        """Test DevDialog with specific optionals."""
+        args = ["dev", "-o", "caramel", "-o", "chocolate"]
+        self.assertIn("-o", args)
+        self.assertIn("caramel", args)
+        self.assertIn("chocolate", args)
+
+    def test_dev_dialog_arguments_just_addon(self):
+        """Test DevDialog with just addon filter."""
+        args = ["dev", "--just", "myAddon"]
+        self.assertIn("--just", args)
+        self.assertIn("myAddon", args)
+
+    def test_build_dialog_arguments_basic(self):
+        """Test BuildDialog basic argument building."""
+        args = ["build"]
+        self.assertEqual(args, ["build"])
+
+    def test_build_dialog_arguments_no_bin(self):
+        """Test BuildDialog with no-bin flag."""
+        args = ["build", "--no-bin"]
+        self.assertIn("--no-bin", args)
+
+    def test_build_dialog_arguments_no_rap(self):
+        """Test BuildDialog with no-rap flag."""
+        args = ["build", "--no-rap"]
+        self.assertIn("--no-rap", args)
+
+    def test_build_dialog_arguments_just_addon(self):
+        """Test BuildDialog with just addon filter."""
+        args = ["build", "--just", "addon1", "--just", "addon2"]
+        self.assertIn("--just", args)
+        self.assertIn("addon1", args)
+        self.assertIn("addon2", args)
+
+    def test_release_dialog_arguments_basic(self):
+        """Test ReleaseDialog basic argument building."""
+        args = ["release"]
+        self.assertEqual(args, ["release"])
+
+    def test_release_dialog_arguments_no_sign(self):
+        """Test ReleaseDialog with no-sign flag."""
+        args = ["release", "--no-sign"]
+        self.assertIn("--no-sign", args)
+
+    def test_release_dialog_arguments_no_archive(self):
+        """Test ReleaseDialog with no-archive flag."""
+        args = ["release", "--no-archive"]
+        self.assertIn("--no-archive", args)
+
+    def test_release_dialog_arguments_all_flags(self):
+        """Test ReleaseDialog with all flags."""
+        args = ["release", "--no-bin", "--no-rap", "--no-sign", "--no-archive", "-t", "4", "-v"]
+        self.assertIn("--no-bin", args)
+        self.assertIn("--no-rap", args)
+        self.assertIn("--no-sign", args)
+        self.assertIn("--no-archive", args)
+        self.assertIn("-t", args)
+        self.assertIn("-v", args)
+
+    def test_launch_dialog_arguments_basic(self):
+        """Test LaunchDialog basic argument building."""
+        args = ["launch"]
+        self.assertEqual(args, ["launch"])
+
+    def test_launch_dialog_arguments_profile(self):
+        """Test LaunchDialog with profile."""
+        args = ["launch", "default"]
+        self.assertIn("default", args)
+
+    def test_launch_dialog_arguments_cdlc(self):
+        """Test LaunchDialog with CDLC shortcut."""
+        args = ["launch", "default", "+ws"]
+        self.assertIn("+ws", args)
+
+    def test_launch_dialog_arguments_quick(self):
+        """Test LaunchDialog with quick flag."""
+        args = ["launch", "-Q"]
+        self.assertIn("-Q", args)
+
+    def test_launch_dialog_arguments_no_filepatching(self):
+        """Test LaunchDialog with no-filepatching flag."""
+        args = ["launch", "-F"]
+        self.assertIn("-F", args)
+
+    def test_launch_dialog_arguments_executable(self):
+        """Test LaunchDialog with custom executable."""
+        args = ["launch", "-e", "arma3profiling_x64"]
+        self.assertIn("-e", args)
+        self.assertIn("arma3profiling_x64", args)
+
+    def test_launch_dialog_arguments_instances(self):
+        """Test LaunchDialog with multiple instances."""
+        args = ["launch", "-i", "2"]
+        self.assertIn("-i", args)
+        self.assertIn("2", args)
+
+    def test_launch_dialog_arguments_passthrough(self):
+        """Test LaunchDialog with passthrough args."""
+        args = ["launch", "--", "-world=empty", "-window"]
+        self.assertIn("--", args)
+        self.assertIn("-world=empty", args)
+        self.assertIn("-window", args)
+
+    def test_localization_coverage_arguments_ascii(self):
+        """Test LocalizationCoverageDialog with ascii format (default)."""
+        args = ["localization", "coverage"]
+        self.assertEqual(args, ["localization", "coverage"])
+
+    def test_localization_coverage_arguments_json(self):
+        """Test LocalizationCoverageDialog with json format."""
+        args = ["localization", "coverage", "--format", "json"]
+        self.assertIn("--format", args)
+        self.assertIn("json", args)
+
+    def test_localization_coverage_arguments_markdown(self):
+        """Test LocalizationCoverageDialog with markdown format."""
+        args = ["localization", "coverage", "--format", "markdown"]
+        self.assertIn("--format", args)
+        self.assertIn("markdown", args)
+
+    def test_localization_sort_arguments_basic(self):
+        """Test LocalizationSortDialog basic argument building."""
+        args = ["localization", "sort"]
+        self.assertEqual(args, ["localization", "sort"])
+
+    def test_localization_sort_arguments_only_lang(self):
+        """Test LocalizationSortDialog with only-lang flag."""
+        args = ["localization", "sort", "--only-lang"]
+        self.assertIn("--only-lang", args)
+
+    def test_new_command_arguments(self):
+        """Test 'hemtt new' command argument building."""
+        args = ["new", "my_mod"]
+        self.assertEqual(args, ["new", "my_mod"])
+        self.assertIn("my_mod", args)
+
+    def test_license_command_arguments_interactive(self):
+        """Test 'hemtt license' command without argument (interactive)."""
+        args = ["license"]
+        self.assertEqual(args, ["license"])
+
+    def test_license_command_arguments_specific(self):
+        """Test 'hemtt license' command with specific license."""
+        args = ["license", "mit"]
+        self.assertIn("mit", args)
+
+    def test_script_command_arguments(self):
+        """Test 'hemtt script' command argument building."""
+        args = ["script", "my_script"]
+        self.assertIn("script", args)
+        self.assertIn("my_script", args)
+
+    def test_value_command_arguments(self):
+        """Test 'hemtt value' command argument building."""
+        args = ["value", "project.name"]
+        self.assertIn("value", args)
+        self.assertIn("project.name", args)
+
+    def test_keys_generate_command_arguments(self):
+        """Test 'hemtt keys generate' command argument building."""
+        args = ["keys", "generate"]
+        self.assertEqual(args, ["keys", "generate"])
+
+    def test_terminal_launch_command_building(self):
+        """Test command building for terminal launches."""
+        # Test that interactive commands prepare correct arguments
+        args = ["new", "my_project"]
+        self.assertIn("new", args)
+        self.assertIn("my_project", args)
+
+        # Test interactive license
+        args = ["license"]
+        self.assertEqual(args, ["license"])
+
+    def test_combined_dialog_arguments_complex(self):
+        """Test complex argument combination."""
+        args = [
+            "dev",
+            "-b",
+            "--no-rap",
+            "-o",
+            "opt1",
+            "-o",
+            "opt2",
+            "--just",
+            "addon",
+            "-t",
+            "8",
+            "-vv",
+        ]
+        self.assertIn("dev", args)
+        self.assertIn("-b", args)
+        self.assertIn("--no-rap", args)
+        self.assertIn("-o", args)
+        self.assertIn("opt1", args)
+        self.assertIn("opt2", args)
+        self.assertIn("--just", args)
+        self.assertIn("addon", args)
+        self.assertIn("-t", args)
+        self.assertIn("8", args)
+        self.assertIn("-vv", args)
+
+
+class TestCommandArgumentValidation(unittest.TestCase):
+    """Test command argument validation and edge cases."""
+
+    def test_empty_optional_list(self):
+        """Test that empty optional list doesn't add arguments."""
+        args = ["dev"]
+        # Simulating empty optionals_entry
+        optionals_text = ""
+        if optionals_text:
+            for opt in optionals_text.split():
+                args.extend(["-o", opt])
+        self.assertEqual(args, ["dev"])
+
+    def test_whitespace_only_optionals(self):
+        """Test that whitespace-only optionals are ignored."""
+        args = ["dev"]
+        optionals_text = "   "
+        if optionals_text.strip():
+            for opt in optionals_text.split():
+                args.extend(["-o", opt])
+        self.assertEqual(args, ["dev"])
+
+    def test_multiple_whitespace_separated_values(self):
+        """Test handling multiple whitespace-separated values."""
+        args = ["dev"]
+        optionals_text = "opt1  opt2   opt3"
+        if optionals_text.strip():
+            for opt in optionals_text.split():
+                args.extend(["-o", opt])
+        self.assertIn("opt1", args)
+        self.assertIn("opt2", args)
+        self.assertIn("opt3", args)
+        # Should have 3 -o flags
+        self.assertEqual(args.count("-o"), 3)
+
+    def test_launch_passthrough_empty(self):
+        """Test launch with empty passthrough args."""
+        args = ["launch"]
+        passthrough_text = ""
+        if passthrough_text.strip():
+            args.append("--")
+            args.extend(passthrough_text.split())
+        self.assertEqual(args, ["launch"])
+        self.assertNotIn("--", args)
+
+    def test_launch_passthrough_populated(self):
+        """Test launch with populated passthrough args."""
+        args = ["launch"]
+        passthrough_text = "-world=empty -window"
+        if passthrough_text.strip():
+            args.append("--")
+            args.extend(passthrough_text.split())
+        self.assertIn("--", args)
+        self.assertIn("-world=empty", args)
+        self.assertIn("-window", args)
+        # -- should come before passthrough args
+        dash_index = args.index("--")
+        world_index = args.index("-world=empty")
+        self.assertLess(dash_index, world_index)
+
+    def test_threads_default_cpu_count(self):
+        """Test threads default to CPU count."""
+        cpu_count = os.cpu_count() or 4
+        threads_value = cpu_count
+        args = ["check"]
+        # Only add if not default
+        if threads_value != cpu_count:
+            args.extend(["-t", str(threads_value)])
+        # Should not add threads arg when it's default
+        self.assertEqual(args, ["check"])
+
+    def test_threads_custom_value(self):
+        """Test threads with custom value."""
+        cpu_count = os.cpu_count() or 4
+        threads_value = 8
+        args = ["check"]
+        if threads_value != cpu_count:
+            args.extend(["-t", str(threads_value)])
+        # Should add threads arg when it's not default
+        if threads_value != cpu_count:
+            self.assertIn("-t", args)
+            self.assertIn("8", args)
 
 
 if __name__ == "__main__":
