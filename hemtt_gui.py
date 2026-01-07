@@ -15,7 +15,6 @@ from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QFileDialog,
-    QFormLayout,
     QFrame,
     QGridLayout,
     QGroupBox,
@@ -378,7 +377,9 @@ class HemttGUI(QMainWindow):
 
         self.btn_new = QPushButton("hemtt new")
         self.btn_new.setStyleSheet(self.button_style)
-        self.btn_new.setToolTip("Create a new HEMTT project\nInteractively sets up project structure")
+        self.btn_new.setToolTip(
+            "Create a new HEMTT project\nInteractively sets up project structure"
+        )
         self.btn_new.clicked.connect(self._run_new)
 
         self.btn_license = QPushButton("hemtt license")
@@ -398,7 +399,9 @@ class HemttGUI(QMainWindow):
 
         self.btn_keys_generate = QPushButton("hemtt keys generate")
         self.btn_keys_generate.setStyleSheet(self.button_style)
-        self.btn_keys_generate.setToolTip("Generate a new private key\nCreate keys for signing PBOs")
+        self.btn_keys_generate.setToolTip(
+            "Generate a new private key\nCreate keys for signing PBOs"
+        )
         self.btn_keys_generate.clicked.connect(self._run_keys_generate)
 
         project_btns_layout.addWidget(self.btn_new)
@@ -902,7 +905,7 @@ class HemttGUI(QMainWindow):
         name, ok = self._get_text_input(
             "Create New Project",
             "Enter project name (folder will be created in current directory):",
-            "my_mod"
+            "my_mod",
         )
         if ok and name:
             # hemtt new is interactive, needs terminal
@@ -919,7 +922,7 @@ class HemttGUI(QMainWindow):
             "Choose a license (or 'interactive' to select interactively):",
             licenses,
             0,
-            False
+            False,
         )
         if ok:
             if license_name == "interactive":
@@ -932,9 +935,7 @@ class HemttGUI(QMainWindow):
     def _run_script(self) -> None:
         """Run 'hemtt script <name>' to execute a Rhai script."""
         name, ok = self._get_text_input(
-            "Run Script",
-            "Enter script name (without .rhai extension):",
-            "my_script"
+            "Run Script", "Enter script name (without .rhai extension):", "my_script"
         )
         if ok and name:
             self._run(["script", name], command_type="other")
@@ -944,7 +945,7 @@ class HemttGUI(QMainWindow):
         name, ok = self._get_text_input(
             "Get Config Value",
             "Enter config key (e.g., project.name, project.version):",
-            "project.name"
+            "project.name",
         )
         if ok and name:
             self._run(["value", name], command_type="other")
@@ -955,7 +956,7 @@ class HemttGUI(QMainWindow):
             self,
             "Generate Private Key",
             "This will generate a new HEMTT private key.\nContinue?",
-            QMessageBox.Yes | QMessageBox.No
+            QMessageBox.Yes | QMessageBox.No,
         )
         if reply == QMessageBox.Yes:
             self._run(["keys", "generate"], command_type="other")
@@ -963,6 +964,7 @@ class HemttGUI(QMainWindow):
     def _get_text_input(self, title: str, label: str, default: str = "") -> tuple[str, bool]:
         """Helper to get text input from user."""
         from PySide6.QtWidgets import QInputDialog
+
         text, ok = QInputDialog.getText(self, title, label, QLineEdit.Normal, default)
         return text.strip(), ok
 
@@ -993,7 +995,7 @@ class HemttGUI(QMainWindow):
             f"Opening terminal to {description}.\n\n"
             f"Command: {cmd_str}\n"
             f"Working directory: {cwd}\n\n"
-            f"The terminal window will open separately."
+            f"The terminal window will open separately.",
         )
 
         # Platform-specific terminal launching
@@ -1005,13 +1007,9 @@ class HemttGUI(QMainWindow):
                     "powershell.exe",
                     "-NoExit",
                     "-Command",
-                    f"cd '{cwd}'; Write-Host 'Running: {cmd_str}' -ForegroundColor Cyan; {cmd_str}; Write-Host 'Command completed. You can close this window.' -ForegroundColor Green"
+                    f"cd '{cwd}'; Write-Host 'Running: {cmd_str}' -ForegroundColor Cyan; {cmd_str}; Write-Host 'Command completed. You can close this window.' -ForegroundColor Green",
                 ]
-                subprocess.Popen(
-                    terminal_cmd,
-                    creationflags=subprocess.CREATE_NEW_CONSOLE,
-                    cwd=cwd
-                )
+                subprocess.Popen(terminal_cmd, creationflags=subprocess.CREATE_NEW_CONSOLE, cwd=cwd)
             elif sys.platform == "darwin":
                 # macOS: Use Terminal.app
                 script = f'cd "{cwd}" && {cmd_str} && echo "Command completed. Press any key to close..." && read -n 1'
@@ -1046,7 +1044,7 @@ class HemttGUI(QMainWindow):
                 APP_TITLE,
                 f"Failed to open terminal:\n{e}\n\n"
                 f"Please run this command manually in a terminal:\n"
-                f"cd {cwd}\n{cmd_str}"
+                f"cd {cwd}\n{cmd_str}",
             )
 
     def _install_hemtt(self) -> None:
@@ -1657,7 +1655,9 @@ class LocalizationSortDialog(BaseCommandDialog):
 
         # Options
         self.only_lang_check = QCheckBox("Only sort languages (--only-lang)")
-        self.only_lang_check.setToolTip("Only sort the languages within keys, preserve order of packages/containers/keys")
+        self.only_lang_check.setToolTip(
+            "Only sort the languages within keys, preserve order of packages/containers/keys"
+        )
         self.main_layout.addWidget(self.only_lang_check)
 
         self.add_buttons()
