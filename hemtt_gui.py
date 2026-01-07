@@ -397,10 +397,13 @@ class HemttGUI(QMainWindow):
         self.btn_value.setToolTip("Print config value\nRetrieve values from project configuration")
         self.btn_value.clicked.connect(self._run_value)
 
-        self.btn_keys_generate = QPushButton("hemtt keys generate")
+        self.btn_keys_generate = QPushButton("⚠️ hemtt keys generate")
         self.btn_keys_generate.setStyleSheet(self.button_style)
         self.btn_keys_generate.setToolTip(
-            "Generate a new private key\nCreate keys for signing PBOs"
+            "⚠️ Generate a new private key\n"
+            "Create keys for signing PBOs\n\n"
+            "WARNING: Keep private keys secure!\n"
+            "Never share or commit private keys to version control."
         )
         self.btn_keys_generate.clicked.connect(self._run_keys_generate)
 
@@ -954,8 +957,14 @@ class HemttGUI(QMainWindow):
         """Run 'hemtt keys generate' to create a new private key."""
         reply = QMessageBox.question(
             self,
-            "Generate Private Key",
-            "This will generate a new HEMTT private key.\nContinue?",
+            "⚠️ Generate Private Key",
+            "This will generate a new HEMTT private key for signing PBOs.\n\n"
+            "⚠️ IMPORTANT SECURITY NOTES:\n"
+            "• Keep private keys secure and confidential\n"
+            "• Never share private keys with others\n"
+            "• Do NOT commit private keys to version control\n"
+            "• Store keys in a safe location with restricted access\n\n"
+            "Continue?",
             QMessageBox.Yes | QMessageBox.No,
         )
         if reply == QMessageBox.Yes:
