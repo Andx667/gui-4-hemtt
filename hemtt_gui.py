@@ -1126,7 +1126,8 @@ class BaseCommandDialog(QDialog):
 
         # Apply dark mode styling if needed
         if dark_mode:
-            self.setStyleSheet("""
+            self.setStyleSheet(
+                """
                 QDialog { background-color: #2b2b2b; color: #e0e0e0; }
                 QLabel { color: #e0e0e0; }
                 QCheckBox { color: #e0e0e0; }
@@ -1136,7 +1137,8 @@ class BaseCommandDialog(QDialog):
                 QLineEdit { background-color: #3b3b3b; color: #e0e0e0; border: 1px solid #555; border-radius: 3px; padding: 4px; }
                 QComboBox { background-color: #3b3b3b; color: #e0e0e0; border: 1px solid #555; border-radius: 3px; padding: 4px; }
                 QSpinBox { background-color: #3b3b3b; color: #e0e0e0; border: 1px solid #555; border-radius: 3px; padding: 4px; }
-            """)
+            """
+            )
 
     def add_verbosity_section(self):
         """Add verbosity radio buttons (Normal/-v/-vv)."""
