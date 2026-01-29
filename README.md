@@ -124,73 +124,79 @@ All main commands (check, dev, build, release, launch) open a dialog where you c
 - **Just addons**: Build only specific addons
 - **Verbosity & Threads**: Standard options
 
-### Localization Commands
-- **Coverage**: Choose output format (ascii, json, pretty-json, markdown)
-- **Sort**: Option to sort only languages within keys
 
-## Project Commands
+# GUI 4 HEMTT
 
-### hemtt new
-Creates a new HEMTT project interactively. Enter a project name and a terminal window will open where HEMTT will guide you through the setup process (asking for mod name, author, prefix, etc.). The terminal will remain open after completion so you can review the output.
+This is a cross-platform GUI wrapper for the HEMTT CLI tool, built with PySide6.
 
-**Note:** This command opens in a separate terminal window because it requires interactive input.
+## Features
 
-### hemtt license
-Add or update your project license. Choose from:
-- `apl-sa` - Arma Public License Share Alike
-- `apl` - Arma Public License
-- `apl-nd` - Arma Public License No Derivatives
-- `apache` - Apache 2.0
-- `gpl` - GNU GPL v3
-- `mit` - MIT
-- `unlicense` - Unlicense
-- `interactive` - Select interactively from HEMTT (opens in terminal)
+- Cross-platform GUI for HEMTT (Windows & Linux)
+- Live process output
+- Dark mode and preferences
 
-When you select a specific license from the dropdown, it will be added directly. Choosing "interactive" opens a terminal window for the full HEMTT interactive license selection.
+## Requirements
 
-### hemtt script
-Run a Rhai script from `.hemtt/scripts/`. Enter the script name without the `.rhai` extension.
+- Python 3.11+
+- PySide6
+- HEMTT CLI (install separately)
 
-### hemtt value
-Print a value from your project configuration. Useful for CI/CD. Examples:
-- `project.name`
-- `project.version`
-- `project.mainprefix`
+## Quick Start
 
-### hemtt keys generate
-Generate a new HEMTT private key for signing PBOs. Follow the interactive prompts.
+1. Install dependencies:
+  ```sh
+  pip install -r requirements.txt
+  ```
+2. Run the GUI (cross-platform):
+  ```sh
+  python hemtt_gui.py
+  ```
 
-## Custom Commands
+## Building an Executable
 
-Enter additional arguments exactly as you would after `hemtt` on the CLI. Example:
+### Windows
 
-```text
-validate
+1. Install PyInstaller in your virtual environment:
+  ```sh
+  pip install pyinstaller
+  ```
+2. Build the executable:
+  ```sh
+  pyinstaller --clean --name GUI-4-hemtt --windowed --onefile --icon=assets/icon.ico hemtt_gui.py
+  ```
+3. The executable will be in the `dist/` folder.
+
+### Linux
+
+1. Install PyInstaller in your virtual environment:
+  ```sh
+  pip install pyinstaller
+  ```
+2. Build the executable (icon must be PNG):
+  ```sh
+  pyinstaller --clean --name GUI-4-hemtt --windowed --onefile --icon=assets/logo.png hemtt_gui.py
+  ```
+3. The executable will be in the `dist/` folder.
+
+## VS Code Tasks (Cross-Platform)
+
+You can use the provided VS Code tasks for building, cleaning, and running on both Windows and Linux. See `.vscode/tasks.json` and `.vscode/tasks.crossplat.yaml` for details.
+
+## Running Tests
+
+```sh
+python -m unittest tools.tests -v
 ```
 
-Then press Run.
+## Notes
 
-You can also use multiple flags, e.g.
+- HEMTT must be installed and available in your PATH.
+- Some features (like winget integration) are Windows-only.
+- On Linux, ensure you have a compatible terminal emulator (gnome-terminal, konsole, or xterm) for terminal features.
 
-```text
-dev --just core --just weapons -v -v
-```
+## License
 
-## Packaging (Windows executable)
-
-### Using VS Code Tasks (Recommended)
-
-Press `Ctrl+Shift+B` or run "Build Executable" from the Command Palette → Tasks menu.
-
-### Manual Build
-
-Using PyInstaller to create an optimized single-file executable:
-
-```pwsh
-pip install pyinstaller
-pyinstaller --name HemttGUI --windowed --onefile --hidden-import=PySide6.QtCore --hidden-import=PySide6.QtGui --hidden-import=PySide6.QtWidgets --exclude-module=PySide6.QtNetwork --exclude-module=PySide6.QtWebEngineWidgets --exclude-module=PySide6.QtWebEngineCore --exclude-module=PySide6.QtQml --exclude-module=PySide6.QtQuick --exclude-module=PySide6.QtMultimedia --exclude-module=PySide6.Qt3D --exclude-module=PySide6.QtCharts --exclude-module=PySide6.QtDataVisualization --exclude-module=PySide6.QtSql --exclude-module=matplotlib --exclude-module=numpy --exclude-module=pandas --strip hemtt_gui.py
-```
-
+See LICENSE.
 This will produce `dist/HemttGUI.exe` (~40-50MB with optimizations).
 
 Note: The executable is larger than tkinter versions (~8MB) because it includes the full Qt6 framework with modern UI capabilities.

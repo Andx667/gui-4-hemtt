@@ -1,0 +1,74 @@
+# Cross-platform build workflow for GUI-4-hemtt
+# - Builds Windows executable with icon
+# - Builds Linux executable (no icon or with PNG)
+# - Cleans build artifacts
+# - Runs app in Python (cross-platform)
+#
+# Usage:
+#   - Windows: Use 'build-win' or 'run-win'
+#   - Linux: Use 'build-linux' or 'run-linux'
+#   - Clean: Use 'clean'
+#   - Run in Python: Use 'run-py'
+
+version: 2.0.0
+
+tasks:
+- label: build-win
+  type: shell
+  command: .venv/Scripts/pyinstaller.exe
+  args:
+  - --clean
+  - --name
+  - GUI-4-hemtt
+  - --windowed
+  - --onefile
+  - --icon=assets/icon.ico
+  - hemtt_gui.py
+  condition: os == 'Windows_NT'
+  group: build
+
+- label: build-linux
+  type: shell
+  command: .venv/bin/pyinstaller
+  args:
+  - --clean
+  - --name
+  - GUI-4-hemtt
+  - --windowed
+  - --onefile
+  - --icon=assets/logo.png
+  - hemtt_gui.py
+  condition: os != 'Windows_NT'
+  group: build
+
+- label: clean
+  type: shell
+  command: |
+    if [ "$OS" = "Windows_NT" ]; then
+      powershell Remove-Item -Path build,dist,*.spec -Recurse -Force -ErrorAction SilentlyContinue
+    else
+      rm -rf build dist *.spec
+    fi
+  group: build
+
+- label: run-py
+  type: shell
+  command: |
+    if [ "$OS" = "Windows_NT" ]; then
+      .venv/Scripts/python.exe hemtt_gui.py
+    else
+      .venv/bin/python3 hemtt_gui.py
+    fi
+  group: test
+
+- label: run-win
+  type: shell
+  command: dist/GUI-4-hemtt.exe
+  condition: os == 'Windows_NT'
+  group: test
+
+- label: run-linux
+  type: shell
+  command: dist/GUI-4-hemtt
+  condition: os != 'Windows_NT'
+  group: test

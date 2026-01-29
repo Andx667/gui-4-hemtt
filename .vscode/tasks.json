@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build Executable",
+            "label": "Build Executable (Windows)",
             "type": "shell",
             "command": "${workspaceFolder}/.venv/Scripts/pyinstaller.exe",
             "args": [
@@ -26,13 +26,50 @@
                 "panel": "shared",
                 "showReuseMessage": true,
                 "clear": false
+            },
+            "options": {
+                "shell": {
+                    "executable": "cmd.exe"
+                }
             }
         },
         {
-            "label": "Clean Build Artifacts",
+            "label": "Build Executable (Linux)",
             "type": "shell",
-            "command": "Remove-Item",
+            "command": "${workspaceFolder}/.venv/bin/pyinstaller",
             "args": [
+                "--clean",
+                "--name",
+                "GUI-4-hemtt",
+                "--windowed",
+                "--onefile",
+                "--icon=assets/logo.png",
+                "hemtt_gui.py"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "options": {
+                "shell": {
+                    "executable": "/bin/bash"
+                }
+            }
+        },
+        {
+            "label": "Clean Build Artifacts (Windows)",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "Remove-Item",
                 "-Path",
                 "build,dist,*.spec",
                 "-Recurse",
@@ -48,12 +85,42 @@
                 "panel": "shared",
                 "showReuseMessage": true,
                 "clear": false
+            },
+            "options": {
+                "shell": {
+                    "executable": "cmd.exe"
+                }
             }
         },
         {
-            "label": "Build and Run Executable",
+            "label": "Clean Build Artifacts (Linux)",
+            "type": "shell",
+            "command": "rm",
+            "args": [
+                "-rf",
+                "build",
+                "dist",
+                "*.spec"
+            ],
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "options": {
+                "shell": {
+                    "executable": "/bin/bash"
+                }
+            }
+        },
+        {
+            "label": "Build and Run Executable (Windows)",
             "dependsOn": [
-                "Build Executable"
+                "Build Executable (Windows)"
             ],
             "dependsOrder": "sequence",
             "type": "shell",
@@ -66,20 +133,58 @@
                 "panel": "shared",
                 "showReuseMessage": true,
                 "clear": false
+            },
+            "options": {
+                "shell": {
+                    "executable": "cmd.exe"
+                }
             }
         },
         {
-            "label": "Clean and Build",
+            "label": "Build and Run Executable (Linux)",
             "dependsOn": [
-                "Clean Build Artifacts",
-                "Build Executable"
+                "Build Executable (Linux)"
+            ],
+            "dependsOrder": "sequence",
+            "type": "shell",
+            "command": "${workspaceFolder}/dist/GUI-4-hemtt",
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "options": {
+                "shell": {
+                    "executable": "/bin/bash"
+                }
+            }
+        },
+        {
+            "label": "Clean and Build (Windows)",
+            "dependsOn": [
+                "Clean Build Artifacts (Windows)",
+                "Build Executable (Windows)"
             ],
             "dependsOrder": "sequence",
             "problemMatcher": [],
             "group": "build"
         },
         {
-            "label": "Run Application (Python)",
+            "label": "Clean and Build (Linux)",
+            "dependsOn": [
+                "Clean Build Artifacts (Linux)",
+                "Build Executable (Linux)"
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": [],
+            "group": "build"
+        },
+        {
+            "label": "Run Application (Python, Windows)",
             "type": "shell",
             "command": "${workspaceFolder}/.venv/Scripts/python.exe",
             "args": [
@@ -94,6 +199,34 @@
                 "panel": "shared",
                 "showReuseMessage": true,
                 "clear": false
+            },
+            "options": {
+                "shell": {
+                    "executable": "cmd.exe"
+                }
+            }
+        },
+        {
+            "label": "Run Application (Python, Linux)",
+            "type": "shell",
+            "command": "${workspaceFolder}/.venv/bin/python3",
+            "args": [
+                "hemtt_gui.py"
+            ],
+            "problemMatcher": [],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "options": {
+                "shell": {
+                    "executable": "/bin/bash"
+                }
             }
         },
         {
