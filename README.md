@@ -1,6 +1,6 @@
 # GUI 4 HEMTT
 
-A lightweight cross-platform (Windows-focused) PySide6 (Qt6) GUI wrapper for the `hemtt` CLI tool.
+A lightweight cross-platform (Windows-focused) PySide6 (Qt6) GUI wrapper for the [`hemtt`](https://hemtt.dev) CLI tool.
 
 ## Screenshot
 
