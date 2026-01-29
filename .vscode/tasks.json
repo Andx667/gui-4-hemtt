@@ -4,8 +4,9 @@
         {
             "label": "Build Executable (Windows)",
             "type": "shell",
-            "command": "${workspaceFolder}/.venv/Scripts/pyinstaller.exe",
+            "command": "${workspaceFolder}/.venv/Scripts/python.exe",
             "args": [
+                "-m", "pyinstaller",
                 "--clean",
                 "--name",
                 "GUI-4-hemtt",
@@ -36,8 +37,9 @@
         {
             "label": "Build Executable (Linux)",
             "type": "shell",
-            "command": "${workspaceFolder}/.venv/bin/pyinstaller",
+            "command": "${workspaceFolder}/.venv/bin/python3",
             "args": [
+                "-m", "pyinstaller",
                 "--clean",
                 "--name",
                 "GUI-4-hemtt",
