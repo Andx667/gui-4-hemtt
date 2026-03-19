@@ -109,7 +109,6 @@ class HemttGUI(QMainWindow):
                 border-radius: 4px;
                 padding: 5px 15px;
                 background-color: #f0f0f0;
-                min-height: 20px;
             }
             QPushButton:hover {
                 background-color: #e0e0e0;
@@ -132,7 +131,6 @@ class HemttGUI(QMainWindow):
                 padding: 5px 15px;
                 background-color: #3a3a3a;
                 color: #e0e0e0;
-                min-height: 20px;
             }
             QPushButton:hover {
                 background-color: #4a4a4a;
@@ -150,6 +148,38 @@ class HemttGUI(QMainWindow):
 
         # Start with light mode style
         self.button_style = self.light_button_style
+
+        self.light_header_style = """
+            QPushButton {
+                border: none;
+                border-bottom: 1px solid #bbb;
+                border-radius: 0px;
+                padding: 3px 8px;
+                background-color: #e4e4e4;
+                color: #333;
+                text-align: left;
+                font-weight: bold;
+            }
+            QPushButton:hover { background-color: #d8d8d8; }
+            QPushButton:checked { background-color: #d8d8d8; }
+        """
+
+        self.dark_header_style = """
+            QPushButton {
+                border: none;
+                border-bottom: 1px solid #555;
+                border-radius: 0px;
+                padding: 3px 8px;
+                background-color: #2a2a2a;
+                color: #c0c0c0;
+                text-align: left;
+                font-weight: bold;
+            }
+            QPushButton:hover { background-color: #353535; }
+            QPushButton:checked { background-color: #353535; color: #e0e0e0; }
+        """
+
+        self.header_style = self.light_header_style
 
         # Winget install/update frame (top-most)
         winget_layout = QHBoxLayout()
@@ -562,6 +592,39 @@ class HemttGUI(QMainWindow):
         status_layout.addWidget(self.elapsed_label)
         main_layout.addLayout(status_layout)
 
+    def _make_collapsible_section(self, title: str, buttons: list) -> QWidget:
+        """Return a collapsible section widget with a toggle-header and a button row.
+
+        The section starts collapsed. Clicking the header expands/collapses it.
+        """
+        wrapper = QWidget()
+        vbox = QVBoxLayout(wrapper)
+        vbox.setContentsMargins(0, 1, 0, 1)
+        vbox.setSpacing(2)
+
+        toggle = QPushButton(f"\u25b6  {title}")
+        toggle.setCheckable(True)
+        toggle.setChecked(False)
+        toggle.setStyleSheet(self.header_style)
+        vbox.addWidget(toggle)
+
+        content = QWidget()
+        hbox = QHBoxLayout(content)
+        hbox.setContentsMargins(4, 2, 4, 4)
+        for btn in buttons:
+            hbox.addWidget(btn)
+        hbox.addStretch()
+        content.setVisible(False)
+        vbox.addWidget(content)
+
+        def on_toggle(checked: bool) -> None:
+            content.setVisible(checked)
+            toggle.setText(f"{'▼' if checked else '▶'}  {title}")
+
+        toggle.toggled.connect(on_toggle)
+        self._collapsible_headers.append(toggle)
+        return wrapper
+
     def _setup_themes(self):
         """Setup light and dark mode color schemes and apply initial theme."""
         self.light_theme = {
@@ -656,13 +719,13 @@ class HemttGUI(QMainWindow):
 
     def _apply_dark_mode(self) -> None:
         """Apply dark mode colors to the entire GUI."""
-        self._apply_theme(self.dark_theme, self.dark_button_style)
+        self._apply_theme(self.dark_theme, self.dark_button_style, self.dark_header_style)
 
     def _apply_light_mode(self) -> None:
         """Apply light mode colors to the entire GUI."""
-        self._apply_theme(self.light_theme, self.light_button_style)
+        self._apply_theme(self.light_theme, self.light_button_style, self.light_header_style)
 
-    def _apply_theme(self, theme: dict, button_style: str) -> None:
+    def _apply_theme(self, theme: dict, button_style: str, header_style: str | None = None) -> None:
         """Apply a theme's colors and button styles to the GUI.
 
         Parameters
@@ -687,6 +750,8 @@ class HemttGUI(QMainWindow):
 
         # Apply button styles
         self.button_style = button_style
+        if header_style is not None:
+            self.header_style = header_style
         self._apply_button_styles()
 
     def _apply_button_styles(self) -> None:
@@ -737,6 +802,10 @@ class HemttGUI(QMainWindow):
             if hasattr(self, attr_name):
                 button = getattr(self, attr_name)
                 button.setStyleSheet(self.button_style)
+
+        # Update collapsible section header toggle buttons
+        for hdr in getattr(self, "_collapsible_headers", []):
+            hdr.setStyleSheet(self.header_style)
 
     def _append_output(self, text: str):
         """Append a line to the output widget with basic severity highlighting."""
@@ -1686,7 +1755,6 @@ class CheckDialog(BaseCommandDialog):
         if self.error_on_all_check.isChecked():
             args.append("-e")
 
-        # Add custom lints
         lints_text = self.lints_entry.text().strip()
         if lints_text:
             for lint in lints_text.split():
@@ -1765,13 +1833,11 @@ class DevDialog(BaseCommandDialog):
         if self.all_optionals_check.isChecked():
             args.append("-O")
 
-        # Specific optionals
         optionals_text = self.optionals_entry.text().strip()
         if optionals_text:
             for opt in optionals_text.split():
                 args.extend(["-o", opt])
 
-        # Just addons
         just_text = self.just_entry.text().strip()
         if just_text:
             for addon in just_text.split():
@@ -1828,7 +1894,6 @@ class BuildDialog(BaseCommandDialog):
         if self.no_rap_check.isChecked():
             args.append("--no-rap")
 
-        # Just addons
         just_text = self.just_entry.text().strip()
         if just_text:
             for addon in just_text.split():
