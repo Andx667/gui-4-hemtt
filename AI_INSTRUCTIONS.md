@@ -65,9 +65,9 @@ gui-4-hemtt/
 1. **hemtt_gui.py** - Contains all GUI classes:
    - `HemttGUI` (QMainWindow) - Main application window
    - `BaseCommandDialog` - Reusable dialog base class with common controls
-    - Command-specific dialogs: `BuildDialog`, `DevDialog`, `CheckDialog`, `ReleaseDialog`, `LaunchDialog`, `LocalizationCoverageDialog`, `LocalizationSortDialog`
-    - File-based utility handlers for PAA/PBO/audio/config/P3D/SQF commands
-    - Project and maintenance command handlers (`new`, `license`, `script`, `value`, `keys`, `wiki`)
+   - Command-specific dialogs: `BuildDialog`, `DevDialog`, `CheckDialog`, `ReleaseDialog`, `LaunchDialog`, `LocalizationCoverageDialog`, `LocalizationSortDialog`
+   - File-based utility handlers for PAA/PBO/audio/config/P3D/SQF commands
+   - Project and maintenance command handlers (`new`, `license`, `script`, `value`, `keys`, `wiki`)
 
 2. **command_runner.py** - Process execution:
    - `CommandRunner` class - Threaded subprocess wrapper with callbacks
