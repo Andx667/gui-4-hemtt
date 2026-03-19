@@ -124,12 +124,13 @@ class CommandRunner:
                 env=run_env,
             )
             assert self.process.stdout is not None
-            for line in self.process.stdout:
-                # Strip ANSI escape codes before sending to output
-                clean_line = strip_ansi_codes(line)
-                self.on_output(clean_line)
-                if self._cancel_requested:
-                    break
+            with self.process.stdout:
+                for line in self.process.stdout:
+                    # Strip ANSI escape codes before sending to output
+                    clean_line = strip_ansi_codes(line)
+                    self.on_output(clean_line)
+                    if self._cancel_requested:
+                        break
             # Ensure process completed
             returncode = self.process.wait()
             self.on_exit(returncode)

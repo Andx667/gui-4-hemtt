@@ -1,5 +1,6 @@
 import os
 import queue
+import shlex
 import shutil
 import subprocess
 import sys
@@ -362,6 +363,100 @@ class HemttGUI(QMainWindow):
         btns3_layout.addStretch()
         main_layout.addLayout(btns3_layout)
 
+        # Fourth row for additional utility buttons
+        btns4_layout = QHBoxLayout()
+
+        self.btn_utils_inspect = QPushButton("hemtt utils inspect")
+        self.btn_utils_inspect.setStyleSheet(self.button_style)
+        self.btn_utils_inspect.setToolTip(
+            "Inspect an Arma file\nAuto-detects supported file types"
+        )
+        self.btn_utils_inspect.clicked.connect(self._run_utils_inspect)
+
+        self.btn_utils_verify = QPushButton("hemtt utils verify")
+        self.btn_utils_verify.setStyleSheet(self.button_style)
+        self.btn_utils_verify.setToolTip(
+            "Verify a signed PBO against a public key\nRequires .pbo and .bikey"
+        )
+        self.btn_utils_verify.clicked.connect(self._run_utils_verify)
+
+        self.btn_pbo_extract = QPushButton("hemtt pbo extract")
+        self.btn_pbo_extract.setStyleSheet(self.button_style)
+        self.btn_pbo_extract.setToolTip(
+            "Extract one file from a PBO\nSpecify the file path inside the archive"
+        )
+        self.btn_pbo_extract.clicked.connect(self._run_pbo_extract)
+
+        self.btn_wiki_force_pull = QPushButton("hemtt wiki force-pull")
+        self.btn_wiki_force_pull.setStyleSheet(self.button_style)
+        self.btn_wiki_force_pull.setToolTip(
+            "Force pull the Arma 3 wiki cache\nRefreshes wiki data regardless of pull time"
+        )
+        self.btn_wiki_force_pull.clicked.connect(self._run_wiki_force_pull)
+
+        btns4_layout.addWidget(self.btn_utils_inspect)
+        btns4_layout.addWidget(self.btn_utils_verify)
+        btns4_layout.addWidget(self.btn_pbo_extract)
+        btns4_layout.addWidget(self.btn_wiki_force_pull)
+        btns4_layout.addStretch()
+        main_layout.addLayout(btns4_layout)
+
+        # Fifth row for audio/config utilities
+        btns5_layout = QHBoxLayout()
+
+        self.btn_audio_inspect = QPushButton("hemtt audio inspect")
+        self.btn_audio_inspect.setStyleSheet(self.button_style)
+        self.btn_audio_inspect.setToolTip("Inspect audio metadata for WSS/WAV/OGG/MP3 files")
+        self.btn_audio_inspect.clicked.connect(self._run_audio_inspect)
+
+        self.btn_audio_convert = QPushButton("hemtt audio convert")
+        self.btn_audio_convert.setStyleSheet(self.button_style)
+        self.btn_audio_convert.setToolTip("Convert audio between WSS, WAV, OGG, and MP3")
+        self.btn_audio_convert.clicked.connect(self._run_audio_convert)
+
+        self.btn_audio_compress = QPushButton("hemtt audio compress")
+        self.btn_audio_compress.setStyleSheet(self.button_style)
+        self.btn_audio_compress.setToolTip("Check project for WSS files that can be compressed")
+        self.btn_audio_compress.clicked.connect(self._run_audio_compress)
+
+        self.btn_config_inspect = QPushButton("hemtt config inspect")
+        self.btn_config_inspect.setStyleSheet(self.button_style)
+        self.btn_config_inspect.setToolTip("Inspect an Arma config file")
+        self.btn_config_inspect.clicked.connect(self._run_config_inspect)
+
+        self.btn_config_derapify = QPushButton("hemtt config derapify")
+        self.btn_config_derapify.setStyleSheet(self.button_style)
+        self.btn_config_derapify.setToolTip("Derapify config.bin files to cpp/json")
+        self.btn_config_derapify.clicked.connect(self._run_config_derapify)
+
+        btns5_layout.addWidget(self.btn_audio_inspect)
+        btns5_layout.addWidget(self.btn_audio_convert)
+        btns5_layout.addWidget(self.btn_audio_compress)
+        btns5_layout.addWidget(self.btn_config_inspect)
+        btns5_layout.addWidget(self.btn_config_derapify)
+        btns5_layout.addStretch()
+        main_layout.addLayout(btns5_layout)
+
+        # Sixth row for P3D and SQF utilities
+        btns6_layout = QHBoxLayout()
+
+        self.btn_p3d_json = QPushButton("hemtt p3d json")
+        self.btn_p3d_json.setStyleSheet(self.button_style)
+        self.btn_p3d_json.setToolTip("Export a P3D model to JSON")
+        self.btn_p3d_json.clicked.connect(self._run_p3d_json)
+
+        self.btn_sqf_case = QPushButton("hemtt sqf case")
+        self.btn_sqf_case.setStyleSheet(self.button_style)
+        self.btn_sqf_case.setToolTip(
+            "Recursively fix SQF command casing\nReview changes carefully due possible false positives"
+        )
+        self.btn_sqf_case.clicked.connect(self._run_sqf_case)
+
+        btns6_layout.addWidget(self.btn_p3d_json)
+        btns6_layout.addWidget(self.btn_sqf_case)
+        btns6_layout.addStretch()
+        main_layout.addLayout(btns6_layout)
+
         # Separator with title for project commands
         project_commands_label = QLabel("Project Commands")
         project_commands_label.setFont(font)
@@ -620,6 +715,22 @@ class HemttGUI(QMainWindow):
             "btn_paa_inspect",
             "btn_pbo_inspect",
             "btn_pbo_unpack",
+            "btn_utils_inspect",
+            "btn_utils_verify",
+            "btn_pbo_extract",
+            "btn_wiki_force_pull",
+            "btn_audio_inspect",
+            "btn_audio_convert",
+            "btn_audio_compress",
+            "btn_config_inspect",
+            "btn_config_derapify",
+            "btn_p3d_json",
+            "btn_sqf_case",
+            "btn_new",
+            "btn_license",
+            "btn_script",
+            "btn_value",
+            "btn_keys_generate",
             "btn_dark_mode",
             "btn_custom",
         ]
@@ -699,6 +810,22 @@ class HemttGUI(QMainWindow):
             self.btn_paa_inspect,
             self.btn_pbo_inspect,
             self.btn_pbo_unpack,
+            self.btn_utils_inspect,
+            self.btn_utils_verify,
+            self.btn_pbo_extract,
+            self.btn_wiki_force_pull,
+            self.btn_audio_inspect,
+            self.btn_audio_convert,
+            self.btn_audio_compress,
+            self.btn_config_inspect,
+            self.btn_config_derapify,
+            self.btn_p3d_json,
+            self.btn_sqf_case,
+            self.btn_new,
+            self.btn_license,
+            self.btn_script,
+            self.btn_value,
+            self.btn_keys_generate,
             self.btn_install_hemtt,
             self.btn_update_hemtt,
             self.btn_custom,
@@ -862,15 +989,255 @@ class HemttGUI(QMainWindow):
 
     def _run_paa_inspect(self) -> None:
         """Open PAA inspect dialog and run hemtt utils paa inspect with selected options."""
-        self._run_file_operation("PAA", "*.paa", ["utils", "paa", "inspect"])
+        from PySide6.QtWidgets import QInputDialog
+
+        file_path, _ = QFileDialog.getOpenFileName(self, "Select PAA file", "", "PAA files (*.paa)")
+        if not file_path:
+            return
+
+        formats = ["ascii", "json", "pretty-json", "markdown"]
+        fmt, ok = QInputDialog.getItem(
+            self, "PAA Inspect Format", "Output format:", formats, 0, False
+        )
+        if not ok:
+            return
+
+        args = ["utils", "paa", "inspect", file_path]
+        if fmt != "ascii":
+            args.extend(["--format", fmt])
+        file_dir = os.path.dirname(os.path.abspath(file_path))
+        self._run(args, command_type="other", cwd=file_dir)
 
     def _run_pbo_inspect(self) -> None:
         """Open PBO inspect dialog and run hemtt utils pbo inspect with selected options."""
-        self._run_file_operation("PBO", "*.pbo", ["utils", "pbo", "inspect"])
+        from PySide6.QtWidgets import QInputDialog
+
+        file_path, _ = QFileDialog.getOpenFileName(self, "Select PBO file", "", "PBO files (*.pbo)")
+        if not file_path:
+            return
+
+        formats = ["ascii", "json", "pretty-json", "markdown"]
+        fmt, ok = QInputDialog.getItem(
+            self, "PBO Inspect Format", "Output format:", formats, 0, False
+        )
+        if not ok:
+            return
+
+        args = ["utils", "pbo", "inspect", file_path]
+        if fmt != "ascii":
+            args.extend(["--format", fmt])
+        file_dir = os.path.dirname(os.path.abspath(file_path))
+        self._run(args, command_type="other", cwd=file_dir)
 
     def _run_pbo_unpack(self) -> None:
         """Open PBO unpack dialog and run hemtt utils pbo unpack with selected options."""
-        self._run_file_operation("PBO", "*.pbo", ["utils", "pbo", "unpack"])
+        pbo_path, _ = QFileDialog.getOpenFileName(self, "Select PBO file", "", "PBO files (*.pbo)")
+        if not pbo_path:
+            return
+
+        output_dir = ""
+        use_output_dir = QMessageBox.question(
+            self,
+            APP_TITLE,
+            "Select a custom output directory?\nChoose No to unpack next to the PBO.",
+            QMessageBox.Yes | QMessageBox.No,
+        )
+        if use_output_dir == QMessageBox.Yes:
+            output_dir = QFileDialog.getExistingDirectory(self, "Select output directory", "")
+            if not output_dir:
+                return
+
+        derap = (
+            QMessageBox.question(
+                self,
+                APP_TITLE,
+                "Derapify rapified files during unpack? (-r)",
+                QMessageBox.Yes | QMessageBox.No,
+            )
+            == QMessageBox.Yes
+        )
+
+        args = ["utils", "pbo", "unpack", pbo_path]
+        if output_dir:
+            args.append(output_dir)
+        if derap:
+            args.append("-r")
+
+        file_dir = os.path.dirname(os.path.abspath(pbo_path))
+        self._run(args, command_type="other", cwd=file_dir)
+
+    def _run_utils_inspect(self) -> None:
+        """Run 'hemtt utils inspect <FILE>' for a selected file."""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self, "Select file to inspect", "", "All files (*.*)"
+        )
+        if file_path:
+            file_dir = os.path.dirname(os.path.abspath(file_path))
+            self._run(["utils", "inspect", file_path], command_type="other", cwd=file_dir)
+
+    def _run_utils_verify(self) -> None:
+        """Run 'hemtt utils verify <PBO> <BIKEY>' for selected files."""
+        pbo_path, _ = QFileDialog.getOpenFileName(self, "Select PBO file", "", "PBO files (*.pbo)")
+        if not pbo_path:
+            return
+
+        bikey_path, _ = QFileDialog.getOpenFileName(
+            self, "Select BIKEY file", "", "BIKEY files (*.bikey)"
+        )
+        if not bikey_path:
+            return
+
+        working_dir = os.path.dirname(os.path.abspath(pbo_path))
+        self._run(["utils", "verify", pbo_path, bikey_path], command_type="other", cwd=working_dir)
+
+    def _run_pbo_extract(self) -> None:
+        """Run 'hemtt utils pbo extract <PBO> <FILE> [OUTPUT]' from dialog inputs."""
+        from PySide6.QtWidgets import QInputDialog
+
+        pbo_path, _ = QFileDialog.getOpenFileName(self, "Select PBO file", "", "PBO files (*.pbo)")
+        if not pbo_path:
+            return
+
+        file_in_pbo, ok = QInputDialog.getText(
+            self,
+            "PBO File Path",
+            "Enter the file path inside the PBO (relative to prefix):",
+            QLineEdit.Normal,
+            "config.cpp",
+        )
+        file_in_pbo = file_in_pbo.strip()
+        if not ok or not file_in_pbo:
+            return
+
+        output_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Optional output file (Cancel to print to output)",
+            "",
+            "All files (*.*)",
+        )
+
+        args = ["utils", "pbo", "extract", pbo_path, file_in_pbo]
+        if output_path:
+            args.append(output_path)
+
+        working_dir = os.path.dirname(os.path.abspath(pbo_path))
+        self._run(args, command_type="other", cwd=working_dir)
+
+    def _run_wiki_force_pull(self) -> None:
+        """Run 'hemtt wiki force-pull'."""
+        self._run(["wiki", "force-pull"], command_type="other")
+
+    def _run_audio_inspect(self) -> None:
+        """Run 'hemtt utils audio inspect <FILE>'."""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Select audio file",
+            "",
+            "Audio files (*.wss *.wav *.ogg *.mp3);;All files (*.*)",
+        )
+        if file_path:
+            file_dir = os.path.dirname(os.path.abspath(file_path))
+            self._run(["utils", "audio", "inspect", file_path], command_type="other", cwd=file_dir)
+
+    def _run_audio_convert(self) -> None:
+        """Run 'hemtt utils audio convert <FILE> <OUTPUT>'."""
+        from PySide6.QtWidgets import QInputDialog
+
+        src_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Select source audio file",
+            "",
+            "Audio files (*.wss *.wav *.ogg *.mp3);;All files (*.*)",
+        )
+        if not src_path:
+            return
+
+        output_path, _ = QFileDialog.getSaveFileName(self, "Select output file", "", "All files (*.*)")
+        if not output_path:
+            return
+
+        args = ["utils", "audio", "convert", src_path, output_path]
+
+        if output_path.lower().endswith(".wss"):
+            levels = ["8", "4", "0"]
+            compression, ok = QInputDialog.getItem(
+                self,
+                "WSS Compression",
+                "Compression level (-c):",
+                levels,
+                0,
+                False,
+            )
+            if not ok:
+                return
+            args.extend(["-c", compression])
+
+        src_dir = os.path.dirname(os.path.abspath(src_path))
+        self._run(args, command_type="other", cwd=src_dir)
+
+    def _run_audio_compress(self) -> None:
+        """Run 'hemtt utils audio compress'."""
+        self._run(["utils", "audio", "compress"], command_type="other")
+
+    def _run_config_inspect(self) -> None:
+        """Run 'hemtt utils config inspect <CONFIG>'."""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Select config file",
+            "",
+            "Config files (*.cpp *.hpp *.rvmat *.bin);;All files (*.*)",
+        )
+        if file_path:
+            file_dir = os.path.dirname(os.path.abspath(file_path))
+            self._run(["utils", "config", "inspect", file_path], command_type="other", cwd=file_dir)
+
+    def _run_config_derapify(self) -> None:
+        """Run 'hemtt utils config derapify <FILE> [OUTPUT]' with format selection."""
+        from PySide6.QtWidgets import QInputDialog
+
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Select config file to derapify",
+            "",
+            "Config files (*.bin *.cpp *.hpp *.rvmat);;All files (*.*)",
+        )
+        if not file_path:
+            return
+
+        formats = ["cpp", "json", "json-pretty"]
+        fmt, ok = QInputDialog.getItem(self, "Derapify Format", "Output format:", formats, 0, False)
+        if not ok:
+            return
+
+        output_path, _ = QFileDialog.getSaveFileName(
+            self, "Optional output file", "", "All files (*.*)"
+        )
+
+        args = ["utils", "config", "derapify", "-f", fmt, file_path]
+        if output_path:
+            args.append(output_path)
+
+        file_dir = os.path.dirname(os.path.abspath(file_path))
+        self._run(args, command_type="other", cwd=file_dir)
+
+    def _run_p3d_json(self) -> None:
+        """Run 'hemtt utils p3d json <P3D> <OUTPUT>'."""
+        p3d_path, _ = QFileDialog.getOpenFileName(self, "Select P3D file", "", "P3D files (*.p3d)")
+        if not p3d_path:
+            return
+
+        output_path, _ = QFileDialog.getSaveFileName(self, "Select JSON output", "", "JSON files (*.json)")
+        if not output_path:
+            return
+
+        p3d_dir = os.path.dirname(os.path.abspath(p3d_path))
+        self._run(["utils", "p3d", "json", p3d_path, output_path], command_type="other", cwd=p3d_dir)
+
+    def _run_sqf_case(self) -> None:
+        """Run 'hemtt utils sqf case <PATH>' for a selected folder."""
+        path = QFileDialog.getExistingDirectory(self, "Select folder for SQF case correction", "")
+        if path:
+            self._run(["utils", "sqf", "case", path], command_type="other", cwd=path)
 
     def _run_file_operation(
         self, file_type: str, filter_pattern: str, base_args: list[str]
@@ -900,7 +1267,11 @@ class HemttGUI(QMainWindow):
         if not extra:
             QMessageBox.information(self, APP_TITLE, "Enter custom arguments, e.g. 'validate'")
             return
-        args = [a for a in extra.split(" ") if a]
+        try:
+            args = shlex.split(extra, posix=(sys.platform != "win32"))
+        except ValueError as e:
+            QMessageBox.critical(self, APP_TITLE, f"Invalid custom arguments:\n{e}")
+            return
         self._run(args, command_type="other")
 
     def _run_new(self) -> None:
@@ -955,6 +1326,8 @@ class HemttGUI(QMainWindow):
 
     def _run_keys_generate(self) -> None:
         """Run 'hemtt keys generate' to create a new private key."""
+        from PySide6.QtWidgets import QInputDialog
+
         reply = QMessageBox.question(
             self,
             "⚠️ Generate Private Key",
@@ -968,7 +1341,63 @@ class HemttGUI(QMainWindow):
             QMessageBox.Yes | QMessageBox.No,
         )
         if reply == QMessageBox.Yes:
-            self._run(["keys", "generate"], command_type="other")
+            args = ["keys", "generate"]
+
+            advanced = QMessageBox.question(
+                self,
+                "Key Derivation Settings",
+                "Configure advanced KDF settings?\nChoose No to use HEMTT defaults.",
+                QMessageBox.Yes | QMessageBox.No,
+            )
+            if advanced == QMessageBox.Yes:
+                mem_cost, ok = QInputDialog.getInt(
+                    self,
+                    "KDF Memory Cost",
+                    "Memory cost in MiB (--mem-cost-mib):",
+                    64,
+                    1,
+                    4096,
+                    1,
+                )
+                if not ok:
+                    return
+
+                iterations, ok = QInputDialog.getInt(
+                    self,
+                    "KDF Iterations",
+                    "Iterations (--iterations):",
+                    4,
+                    1,
+                    64,
+                    1,
+                )
+                if not ok:
+                    return
+
+                parallelism, ok = QInputDialog.getInt(
+                    self,
+                    "KDF Parallelism",
+                    "Parallelism (--parallelism):",
+                    1,
+                    1,
+                    32,
+                    1,
+                )
+                if not ok:
+                    return
+
+                args.extend(
+                    [
+                        "--mem-cost-mib",
+                        str(mem_cost),
+                        "--iterations",
+                        str(iterations),
+                        "--parallelism",
+                        str(parallelism),
+                    ]
+                )
+
+            self._run(args, command_type="other")
 
     def _get_text_input(self, title: str, label: str, default: str = "") -> tuple[str, bool]:
         """Helper to get text input from user."""

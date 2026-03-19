@@ -1,4 +1,5 @@
 import os
+import tempfile
 import time
 import unittest
 from unittest.mock import MagicMock, patch
@@ -177,6 +178,15 @@ class TestCommandRunnerClass(unittest.TestCase):
 class TestConfigStore(unittest.TestCase):
     """Test config_store module functions."""
 
+    def setUp(self):
+        """Use an isolated temporary config path for each test."""
+        self._tmpdir = tempfile.TemporaryDirectory()
+        self._config_path = os.path.join(self._tmpdir.name, "config.json")
+        self._config_patcher = patch("config_store.get_config_path", return_value=self._config_path)
+        self._local_patcher = patch(f"{__name__}.get_config_path", return_value=self._config_path)
+        self._config_patcher.start()
+        self._local_patcher.start()
+
     def test_config_roundtrip(self):
         """Test config save and load cycle."""
         cfg = load_config()
@@ -252,7 +262,7 @@ class TestConfigStore(unittest.TestCase):
         """Test that non-dict JSON returns defaults."""
         import json
 
-        path = get_config_path()
+        path = self._config_path
         # Write non-dict JSON (list instead)
         with open(path, "w", encoding="utf-8") as f:
             json.dump(["not", "a", "dict"], f)
@@ -269,7 +279,7 @@ class TestConfigStore(unittest.TestCase):
 
     def test_config_save_creates_file(self):
         """Test save_config creates file if it doesn't exist."""
-        path = get_config_path()
+        path = self._config_path
         if os.path.exists(path):
             os.remove(path)
 
@@ -294,7 +304,7 @@ class TestConfigStore(unittest.TestCase):
     def test_config_non_string_keys_filtered(self):
         """Test that non-string keys are filtered out."""
 
-        get_config_path()
+        _ = self._config_path
         # Manually write config with non-string keys (though JSON doesn't allow this,
         # we can test the filtering logic)
         cfg = load_config()
@@ -303,13 +313,10 @@ class TestConfigStore(unittest.TestCase):
             self.assertIsInstance(key, str)
 
     def tearDown(self):
-        """Cleanup test config side effect."""
-        path = get_config_path()
-        if os.path.isfile(path):
-            try:
-                os.remove(path)
-            except Exception:
-                pass
+        """Stop path patchers and remove temp test data."""
+        self._local_patcher.stop()
+        self._config_patcher.stop()
+        self._tmpdir.cleanup()
 
 
 class TestDialogArgumentBuilding(unittest.TestCase):
