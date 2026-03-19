@@ -5,11 +5,13 @@
 **GUI 4 HEMTT** is a cross-platform desktop application that provides a graphical user interface for the [HEMTT](https://hemtt.dev) command-line tool. HEMTT is a build system for Arma 3 mod development. This GUI simplifies interaction with HEMTT by providing one-click access to all major commands with live process output and persistent configuration.
 
 ### Target Audience
+
 - Arma 3 mod developers who use HEMTT for building and managing their projects
 - Users who prefer GUI over CLI for HEMTT operations
 - Both Windows and Linux users
 
 ### Key Use Cases
+
 - Building Arma 3 mods with various configurations (dev, release, check, launch)
 - Managing HEMTT project settings visually
 - Monitoring build processes with live output
@@ -26,7 +28,7 @@
 
 ## Project Structure
 
-```
+```log
 gui-4-hemtt/
 ├── hemtt_gui.py           # Main application entry point & GUI classes
 ├── command_runner.py      # Background process execution utilities
@@ -104,6 +106,7 @@ target-version = ["py311"]
 ```
 
 **Key Rules:**
+
 - Maximum line length: 100 characters
 - Use double quotes for strings
 - Use spaces for indentation (4 spaces)
@@ -113,6 +116,7 @@ target-version = ["py311"]
 ### Type Hints
 
 All functions should include type annotations:
+
 ```python
 def function_name(param: str, optional: int | None = None) -> bool:
     """Docstring here."""
@@ -124,6 +128,7 @@ Use modern union syntax: `str | None` instead of `Optional[str]`
 ### Docstrings
 
 Use NumPy-style docstrings with sections:
+
 ```python
 def example_function(arg1: str, arg2: int) -> str:
     """Brief one-line description.
@@ -162,6 +167,7 @@ def example_function(arg1: str, arg2: int) -> str:
 ### Building HEMTT Commands
 
 Use `build_command()` from `command_runner.py`:
+
 ```python
 from command_runner import build_command
 
@@ -173,6 +179,7 @@ cmd = build_command(hemtt_path, args)  # ["hemtt", "build", "--release", "-v"]
 ### Running Commands
 
 Use the `CommandRunner` class:
+
 ```python
 runner = CommandRunner(
     command=cmd,
@@ -188,6 +195,7 @@ runner.start()
 ### Default Configuration
 
 See `config_store.py` for the `DEFAULTS` dictionary:
+
 - `hemtt_path`: Path to HEMTT executable (default: "hemtt")
 - `project_dir`: Working directory (default: current directory)
 - `dark_mode`: UI theme preference (default: False)
@@ -209,6 +217,7 @@ save_config(config)
 ### Development
 
 Run directly with Python:
+
 ```bash
 python hemtt_gui.py
 ```
@@ -218,11 +227,13 @@ Or use VS Code task: "Run Application (Python, Windows)"
 ### Building Executables
 
 **Windows:**
+
 ```bash
 pyinstaller --clean --name GUI-4-hemtt --windowed --onefile --icon=assets/icon.ico hemtt_gui.py
 ```
 
 **Linux:**
+
 ```bash
 pyinstaller --clean --name GUI-4-hemtt --windowed --onefile --icon=assets/logo.png hemtt_gui.py
 ```
@@ -232,6 +243,7 @@ Output: `dist/GUI-4-hemtt.exe` (Windows) or `dist/GUI-4-hemtt` (Linux)
 ### VS Code Tasks
 
 Use the predefined tasks in `.vscode/tasks.json`:
+
 - **Build Executable (Windows)** - Clean build for Windows
 - **Build Executable (Linux)** - Clean build for Linux
 - **Clean Build Artifacts** - Remove build/dist directories
@@ -241,6 +253,7 @@ Use the predefined tasks in `.vscode/tasks.json`:
 ## Testing
 
 Unit tests are in `tools/tests.py`. Run with:
+
 ```bash
 python -m unittest tools.tests -v
 ```
@@ -263,6 +276,7 @@ Or use VS Code task: "Run Tests"
 ### Cross-Platform Code
 
 Use platform checks:
+
 ```python
 import sys
 
