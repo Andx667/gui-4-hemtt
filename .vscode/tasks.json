@@ -3,10 +3,10 @@
     "tasks": [
         {
             "label": "Build Executable (Windows)",
-            "type": "shell",
-            "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+            "type": "process",
+            "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
             "args": [
-                "-m", "pyinstaller",
+                "-m", "PyInstaller",
                 "--clean",
                 "--name",
                 "GUI-4-hemtt",
@@ -27,11 +27,6 @@
                 "panel": "shared",
                 "showReuseMessage": true,
                 "clear": false
-            },
-            "options": {
-                "shell": {
-                    "executable": "cmd.exe"
-                }
             }
         },
         {
@@ -39,7 +34,7 @@
             "type": "shell",
             "command": "${workspaceFolder}/.venv/bin/python3",
             "args": [
-                "-m", "pyinstaller",
+                "-m", "PyInstaller",
                 "--clean",
                 "--name",
                 "GUI-4-hemtt",
@@ -68,16 +63,14 @@
         },
         {
             "label": "Clean Build Artifacts (Windows)",
-            "type": "shell",
-            "command": "powershell",
+            "type": "process",
+            "command": "powershell.exe",
             "args": [
-                "Remove-Item",
-                "-Path",
-                "build,dist,*.spec",
-                "-Recurse",
-                "-Force",
-                "-ErrorAction",
-                "SilentlyContinue"
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-Command",
+                "$targets = @('build','dist'); Remove-Item -Path $targets -Recurse -Force -ErrorAction SilentlyContinue; Get-ChildItem -Path *.spec -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue"
             ],
             "problemMatcher": [],
             "presentation": {
@@ -87,11 +80,6 @@
                 "panel": "shared",
                 "showReuseMessage": true,
                 "clear": false
-            },
-            "options": {
-                "shell": {
-                    "executable": "cmd.exe"
-                }
             }
         },
         {
@@ -125,8 +113,8 @@
                 "Build Executable (Windows)"
             ],
             "dependsOrder": "sequence",
-            "type": "shell",
-            "command": "${workspaceFolder}/dist/GUI-4-hemtt.exe",
+            "type": "process",
+            "command": "${workspaceFolder}\\dist\\GUI-4-hemtt.exe",
             "problemMatcher": [],
             "presentation": {
                 "echo": true,
@@ -135,11 +123,6 @@
                 "panel": "shared",
                 "showReuseMessage": true,
                 "clear": false
-            },
-            "options": {
-                "shell": {
-                    "executable": "cmd.exe"
-                }
             }
         },
         {
@@ -187,8 +170,8 @@
         },
         {
             "label": "Run Application (Python, Windows)",
-            "type": "shell",
-            "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+            "type": "process",
+            "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
             "args": [
                 "hemtt_gui.py"
             ],
@@ -201,11 +184,6 @@
                 "panel": "shared",
                 "showReuseMessage": true,
                 "clear": false
-            },
-            "options": {
-                "shell": {
-                    "executable": "cmd.exe"
-                }
             }
         },
         {
@@ -233,8 +211,8 @@
         },
         {
             "label": "Run Tests",
-            "type": "shell",
-            "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+            "type": "process",
+            "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
             "args": [
                 "-m",
                 "unittest",
@@ -254,8 +232,8 @@
         },
         {
             "label": "Run Tests (Quiet)",
-            "type": "shell",
-            "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+            "type": "process",
+            "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
             "args": [
                 "-m",
                 "unittest",
