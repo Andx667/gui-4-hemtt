@@ -1,4 +1,5 @@
 import os
+import shlex
 import tempfile
 import time
 import unittest
@@ -548,6 +549,106 @@ class TestDialogArgumentBuilding(unittest.TestCase):
         args = ["keys", "generate"]
         self.assertEqual(args, ["keys", "generate"])
 
+    def test_keys_generate_command_arguments_advanced(self):
+        """Test 'hemtt keys generate' command with advanced KDF options."""
+        args = [
+            "keys",
+            "generate",
+            "--mem-cost-mib",
+            "128",
+            "--iterations",
+            "8",
+            "--parallelism",
+            "2",
+        ]
+        self.assertIn("--mem-cost-mib", args)
+        self.assertIn("--iterations", args)
+        self.assertIn("--parallelism", args)
+
+    def test_wiki_force_pull_arguments(self):
+        """Test 'hemtt wiki force-pull' command argument building."""
+        args = ["wiki", "force-pull"]
+        self.assertEqual(args, ["wiki", "force-pull"])
+
+    def test_utils_inspect_arguments(self):
+        """Test 'hemtt utils inspect' command argument building."""
+        args = ["utils", "inspect", "file.pbo"]
+        self.assertEqual(args[0:2], ["utils", "inspect"])
+        self.assertIn("file.pbo", args)
+
+    def test_utils_verify_arguments(self):
+        """Test 'hemtt utils verify' command argument building."""
+        args = ["utils", "verify", "addon.pbo", "key.bikey"]
+        self.assertEqual(args[0:2], ["utils", "verify"])
+        self.assertIn("addon.pbo", args)
+        self.assertIn("key.bikey", args)
+
+    def test_pbo_extract_arguments_with_output(self):
+        """Test 'hemtt utils pbo extract' with explicit output path."""
+        args = ["utils", "pbo", "extract", "my.pbo", "config.cpp", "out.cpp"]
+        self.assertEqual(args[0:3], ["utils", "pbo", "extract"])
+        self.assertIn("config.cpp", args)
+        self.assertIn("out.cpp", args)
+
+    def test_pbo_unpack_arguments_with_derap(self):
+        """Test 'hemtt utils pbo unpack' with derap option."""
+        args = ["utils", "pbo", "unpack", "my.pbo", "out_dir", "-r"]
+        self.assertEqual(args[0:3], ["utils", "pbo", "unpack"])
+        self.assertIn("-r", args)
+
+    def test_paa_inspect_arguments_markdown(self):
+        """Test 'hemtt utils paa inspect' with markdown format."""
+        args = ["utils", "paa", "inspect", "icon.paa", "--format", "markdown"]
+        self.assertEqual(args[0:3], ["utils", "paa", "inspect"])
+        self.assertIn("--format", args)
+        self.assertIn("markdown", args)
+
+    def test_pbo_inspect_arguments_pretty_json(self):
+        """Test 'hemtt utils pbo inspect' with pretty-json format."""
+        args = ["utils", "pbo", "inspect", "mod.pbo", "--format", "pretty-json"]
+        self.assertEqual(args[0:3], ["utils", "pbo", "inspect"])
+        self.assertIn("--format", args)
+        self.assertIn("pretty-json", args)
+
+    def test_audio_convert_arguments_with_compression(self):
+        """Test 'hemtt utils audio convert' with WSS compression option."""
+        args = ["utils", "audio", "convert", "in.wav", "out.wss", "-c", "8"]
+        self.assertEqual(args[0:3], ["utils", "audio", "convert"])
+        self.assertIn("-c", args)
+        self.assertIn("8", args)
+
+    def test_audio_inspect_arguments(self):
+        """Test 'hemtt utils audio inspect' arguments."""
+        args = ["utils", "audio", "inspect", "sound.wss"]
+        self.assertEqual(args[0:3], ["utils", "audio", "inspect"])
+
+    def test_audio_compress_arguments(self):
+        """Test 'hemtt utils audio compress' arguments."""
+        args = ["utils", "audio", "compress"]
+        self.assertEqual(args, ["utils", "audio", "compress"])
+
+    def test_config_inspect_arguments(self):
+        """Test 'hemtt utils config inspect' arguments."""
+        args = ["utils", "config", "inspect", "config.cpp"]
+        self.assertEqual(args[0:3], ["utils", "config", "inspect"])
+
+    def test_config_derapify_arguments_with_format_and_output(self):
+        """Test 'hemtt utils config derapify' arguments with output format."""
+        args = ["utils", "config", "derapify", "-f", "json-pretty", "config.bin", "config.json"]
+        self.assertEqual(args[0:3], ["utils", "config", "derapify"])
+        self.assertIn("-f", args)
+        self.assertIn("json-pretty", args)
+
+    def test_p3d_json_arguments(self):
+        """Test 'hemtt utils p3d json' arguments."""
+        args = ["utils", "p3d", "json", "model.p3d", "model.json"]
+        self.assertEqual(args[0:3], ["utils", "p3d", "json"])
+
+    def test_sqf_case_arguments(self):
+        """Test 'hemtt utils sqf case' arguments."""
+        args = ["utils", "sqf", "case", "addons"]
+        self.assertEqual(args[0:3], ["utils", "sqf", "case"])
+
     def test_terminal_launch_command_building(self):
         """Test command building for terminal launches."""
         # Test that interactive commands prepare correct arguments
@@ -670,6 +771,23 @@ class TestCommandArgumentValidation(unittest.TestCase):
         if threads_value != cpu_count:
             self.assertIn("-t", args)
             self.assertIn("8", args)
+
+    def test_custom_args_parsing_with_quotes_windows_mode(self):
+        """Test custom argument parsing keeps quoted segments together."""
+        parsed = shlex.split('launch -- "-mod=My Mod" -window', posix=False)
+        self.assertIn('"-mod=My Mod"', parsed)
+        self.assertIn("-window", parsed)
+
+    def test_custom_args_parsing_with_quotes_posix_mode(self):
+        """Test POSIX parsing keeps quoted values without quote characters."""
+        parsed = shlex.split('launch -- "-mod=My Mod" -window', posix=True)
+        self.assertIn("-mod=My Mod", parsed)
+        self.assertIn("-window", parsed)
+
+    def test_custom_args_parsing_invalid_quote(self):
+        """Test invalid custom argument string raises ValueError."""
+        with self.assertRaises(ValueError):
+            shlex.split('launch -- "unterminated', posix=True)
 
 
 if __name__ == "__main__":
