@@ -368,9 +368,7 @@ class HemttGUI(QMainWindow):
 
         self.btn_utils_inspect = QPushButton("hemtt utils inspect")
         self.btn_utils_inspect.setStyleSheet(self.button_style)
-        self.btn_utils_inspect.setToolTip(
-            "Inspect an Arma file\nAuto-detects supported file types"
-        )
+        self.btn_utils_inspect.setToolTip("Inspect an Arma file\nAuto-detects supported file types")
         self.btn_utils_inspect.clicked.connect(self._run_utils_inspect)
 
         self.btn_utils_verify = QPushButton("hemtt utils verify")
@@ -1152,7 +1150,9 @@ class HemttGUI(QMainWindow):
         if not src_path:
             return
 
-        output_path, _ = QFileDialog.getSaveFileName(self, "Select output file", "", "All files (*.*)")
+        output_path, _ = QFileDialog.getSaveFileName(
+            self, "Select output file", "", "All files (*.*)"
+        )
         if not output_path:
             return
 
@@ -1226,12 +1226,16 @@ class HemttGUI(QMainWindow):
         if not p3d_path:
             return
 
-        output_path, _ = QFileDialog.getSaveFileName(self, "Select JSON output", "", "JSON files (*.json)")
+        output_path, _ = QFileDialog.getSaveFileName(
+            self, "Select JSON output", "", "JSON files (*.json)"
+        )
         if not output_path:
             return
 
         p3d_dir = os.path.dirname(os.path.abspath(p3d_path))
-        self._run(["utils", "p3d", "json", p3d_path, output_path], command_type="other", cwd=p3d_dir)
+        self._run(
+            ["utils", "p3d", "json", p3d_path, output_path], command_type="other", cwd=p3d_dir
+        )
 
     def _run_sqf_case(self) -> None:
         """Run 'hemtt utils sqf case <PATH>' for a selected folder."""
